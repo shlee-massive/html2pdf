@@ -1,4 +1,4 @@
-.PHONY: up down build run serve run-ko run-ja run-en clean health
+.PHONY: up down build run serve run-ko run-ja run-en clean health load load-sweep load-weasy load-weasy-sweep
 
 up:
 	docker compose up -d --build
@@ -44,3 +44,16 @@ health:
 
 clean:
 	rm -rf output/*.pdf output/*.html bin
+
+# 동시 요청 부하 테스트 (서버 `make serve` + `make up` 선행 필요)
+load:
+	go run ./cmd/loadtest -backend gotenberg -concurrency 4 -total 20
+
+load-sweep:
+	go run ./cmd/loadtest -backend gotenberg -sweep
+
+load-weasy:
+	go run ./cmd/loadtest -backend weasyprint -concurrency 4 -total 20
+
+load-weasy-sweep:
+	go run ./cmd/loadtest -backend weasyprint -sweep

@@ -3,3 +3,6 @@ output/*.html
 bin/
 .DS_Store
 .claude/
+# go build 결과물이 루트에 떨어지는 경우 방지
+/loadtest
+/matrix
