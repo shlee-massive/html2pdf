@@ -1,0 +1,48 @@
+{
+  "locale": "ja",
+  "currency": "JPY",
+  "invoice_number": "INV-2026-JP-00421",
+  "issue_date": "2026年5月22日",
+  "due_date": "2026年6月21日",
+  "tax_rate": 10,
+  "from": {
+    "name": "髙﨑𠮷田商事 株式会社",
+    "address": "〒100-0005 東京都千代田区丸の内1-2-3 丸の内ビル12F",
+    "tax_id": "T1234567890123",
+    "contact": "経理部 / +81-3-1234-5678"
+  },
+  "to": {
+    "name": "山田産業 株式会社",
+    "address": "〒530-0001 大阪府大阪市北区梅田2-4-9 ブリーゼタワー8F",
+    "tax_id": "T9876543210987",
+    "contact": "購買課 山田太郎 様"
+  },
+  "items": [
+    {"description": "業務用クラウドストレージ (年間ライセンス)", "sku": "CLD-STD-Y", "quantity": 12, "unit_price": 18000, "amount": 216000},
+    {"description": "シングルサインオン (SSO) アドオン", "sku": "SSO-ADD", "quantity": 12, "unit_price": 5000, "amount": 60000},
+    {"description": "監査ログ・90日保管オプション", "sku": "AUD-90", "quantity": 12, "unit_price": 8000, "amount": 96000},
+    {"description": "API 利用料 (100万コール/月)", "sku": "API-1M", "quantity": 12, "unit_price": 12000, "amount": 144000},
+    {"description": "専用サポート (営業時間内)", "sku": "SUP-BIZ", "quantity": 12, "unit_price": 25000, "amount": 300000},
+    {"description": "オンサイト技術支援 (1営業日)", "sku": "ONS-1D", "quantity": 4, "unit_price": 120000, "amount": 480000},
+    {"description": "セキュリティ監査レポート (年次)", "sku": "SEC-AUDIT", "quantity": 1, "unit_price": 350000, "amount": 350000},
+    {"description": "カスタムレポートテンプレート開発", "sku": "RPT-DEV", "quantity": 3, "unit_price": 80000, "amount": 240000},
+    {"description": "データ移行サービス (初期)", "sku": "MIG-INIT", "quantity": 1, "unit_price": 450000, "amount": 450000},
+    {"description": "本番環境構築・初期設定", "sku": "ENV-SETUP", "quantity": 1, "unit_price": 280000, "amount": 280000},
+    {"description": "ステージング環境構築", "sku": "ENV-STG", "quantity": 1, "unit_price": 150000, "amount": 150000},
+    {"description": "管理者トレーニング (半日コース)", "sku": "TRN-HALF", "quantity": 2, "unit_price": 60000, "amount": 120000},
+    {"description": "エンドユーザー向け資料作成 (日本語)", "sku": "DOC-JA", "quantity": 1, "unit_price": 90000, "amount": 90000},
+    {"description": "ヘルプセンター翻訳 (英→日)", "sku": "TRN-EN-JA", "quantity": 1, "unit_price": 220000, "amount": 220000},
+    {"description": "月次レビューミーティング (1時間×12回)", "sku": "MTG-MON", "quantity": 12, "unit_price": 15000, "amount": 180000},
+    {"description": "DR (災害復旧) リハーサル", "sku": "DR-DRILL", "quantity": 2, "unit_price": 180000, "amount": 360000},
+    {"description": "高速転送オプション (1TB/月)", "sku": "XFR-1TB", "quantity": 12, "unit_price": 7000, "amount": 84000},
+    {"description": "IP 制限・拠点別アクセス制御", "sku": "ACL-IP", "quantity": 12, "unit_price": 4000, "amount": 48000},
+    {"description": "請求書 PDF カスタマイズ (適格請求書対応)", "sku": "INV-QI", "quantity": 1, "unit_price": 180000, "amount": 180000},
+    {"description": "電子帳簿保存法対応コンサルティング", "sku": "EBP-CON", "quantity": 1, "unit_price": 320000, "amount": 320000},
+    {"description": "認定タイムスタンプ (年間1万件)", "sku": "TSA-10K", "quantity": 1, "unit_price": 65000, "amount": 65000},
+    {"description": "PDF/A-2b 出力ライセンス", "sku": "PDFA-LIC", "quantity": 1, "unit_price": 95000, "amount": 95000},
+    {"description": "予備時間 (技術支援プール)", "sku": "RES-POOL", "quantity": 20, "unit_price": 12000, "amount": 240000},
+    {"description": "緊急対応 (24/365 オプション)", "sku": "EMG-247", "quantity": 12, "unit_price": 35000, "amount": 420000},
+    {"description": "契約管理・更新サポート", "sku": "CTR-MGR", "quantity": 1, "unit_price": 50000, "amount": 50000}
+  ],
+  "notes": "■ 振込先: 三菱UFJ銀行 丸の内支店 普通 1234567 髙﨑𠮷田商事(カ\n■ 振込手数料はお客様負担にてお願いいたします。\n■ ご不明点は経理部 (accounting@example.co.jp) までご連絡ください。"
+}

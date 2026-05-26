@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>請求書 — プロジェクト別ネスト</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  body {
+    font-family: "Noto Sans JP", "Noto Sans CJK JP", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 10.5px;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .meta { color: #6b6b73; font-size: 11px; margin-bottom: 18px; }
+  .meta strong { color: #1a1a1a; }
+
+  table { border-collapse: collapse; }
+  table.outer {
+    width: 100%;
+    table-layout: fixed;
+    border: 1px solid #1a1a1a;
+  }
+  table.outer > thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.outer > tbody > tr > td {
+    border-top: 1px solid #d8d8de;
+    padding: 12px 10px;
+    vertical-align: top;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .proj-header {
+    background: #fafafc;
+    padding: 8px 10px;
+    margin: -12px -10px 10px;
+    border-bottom: 1px solid #ececf0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .proj-header h3 { margin: 0; font-size: 13px; }
+  .proj-header .pid { color: #6b6b73; font-size: 10.5px; font-family: "SF Mono", Menlo, monospace; }
+
+  .nest-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .nest-grid > div { min-width: 0; }
+  .nest-grid h4 {
+    margin: 0 0 4px;
+    font-size: 10px;
+    color: #6b6b73;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+
+  table.inner { width: 100%; font-size: 9.5px; }
+  table.inner th, table.inner td {
+    border-bottom: 1px solid #ececf0;
+    padding: 4px 5px;
+    text-align: left;
+  }
+  table.inner th {
+    background: #fafafc;
+    font-weight: 600;
+    color: #6b6b73;
+    font-size: 9px;
+  }
+  table.inner td.num, table.inner th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.inner tr.sub td {
+    background: #fafafc;
+    font-weight: 600;
+    border-bottom: none;
+    text-align: right;
+  }
+
+  .proj-total {
+    margin-top: 8px;
+    text-align: right;
+    font-size: 11px;
+    border-top: 1px solid #1a1a1a;
+    padding-top: 6px;
+  }
+  .proj-total strong { font-size: 13px; margin-left: 8px; font-variant-numeric: tabular-nums; }
+
+  .grand {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .grand table { width: 300px; }
+  .grand td { padding: 6px 10px; font-size: 11.5px; }
+  .grand td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .grand tr.total td {
+    font-weight: 700;
+    font-size: 15px;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <h1>請求書 — プロジェクト別</h1>
+  <div class="meta">
+    <strong>INV-2026-0419</strong> · 発行日 2026-05-26 · 請求先: マッシブリンクス株式会社 · 支払期限: 2026-06-25
+  </div>
+
+  <table class="outer">
+    <thead>
+      <tr><th>プロジェクト別明細 (人員 · 資材 · その他経費)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>① データプラットフォーム構築</h3>
+            <span class="pid">PRJ-DP-2026-A1 · 2026-03 ~ 2026-08</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>人員</h4>
+              <table class="inner">
+                <thead><tr><th>役割</th><th class="num">M/M</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>PM (シニア)</td><td class="num">3.0</td><td class="num">2,100,000</td></tr>
+                  <tr><td>データエンジニア ×2</td><td class="num">10.0</td><td class="num">5,500,000</td></tr>
+                  <tr><td>アナリティクスエンジニア</td><td class="num">4.0</td><td class="num">2,200,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">9,800,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>資材</h4>
+              <table class="inner">
+                <thead><tr><th>品目</th><th class="num">数量</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>Snowflake クレジット</td><td class="num">5,000</td><td class="num">1,450,000</td></tr>
+                  <tr><td>dbt Cloud (Team)</td><td class="num">1 年</td><td class="num">720,000</td></tr>
+                  <tr><td>Fivetran コネクタ</td><td class="num">8</td><td class="num">960,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">3,130,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>その他経費</h4>
+              <table class="inner">
+                <thead><tr><th>項目</th><th class="num">-</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>出張 (地方 4回)</td><td class="num">4</td><td class="num">320,000</td></tr>
+                  <tr><td>外部コンサルティング</td><td class="num">2 回</td><td class="num">600,000</td></tr>
+                  <tr><td>教育・資格</td><td class="num">-</td><td class="num">150,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">1,070,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">プロジェクト合計 <strong>¥ 14,000,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>② AI モデル運用インフラ</h3>
+            <span class="pid">PRJ-AI-2026-B2 · 2026-04 ~ 2026-09</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>人員</h4>
+              <table class="inner">
+                <thead><tr><th>役割</th><th class="num">M/M</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>ML PM</td><td class="num">2.5</td><td class="num">1,750,000</td></tr>
+                  <tr><td>ML Eng. ×3</td><td class="num">15.0</td><td class="num">9,000,000</td></tr>
+                  <tr><td>MLOps Eng.</td><td class="num">5.0</td><td class="num">3,250,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">14,000,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>資材</h4>
+              <table class="inner">
+                <thead><tr><th>品目</th><th class="num">数量</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>GPU インスタンス (A100)</td><td class="num">6 ヶ月</td><td class="num">4,800,000</td></tr>
+                  <tr><td>ベクトル DB (Pinecone)</td><td class="num">1 年</td><td class="num">1,200,000</td></tr>
+                  <tr><td>モデル監視 SaaS</td><td class="num">1 年</td><td class="num">600,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">6,600,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>その他経費</h4>
+              <table class="inner">
+                <thead><tr><th>項目</th><th class="num">-</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>学会参加 (NeurIPS)</td><td class="num">3 名</td><td class="num">450,000</td></tr>
+                  <tr><td>モデル評価データ購入</td><td class="num">-</td><td class="num">800,000</td></tr>
+                  <tr><td>セキュリティ監査</td><td class="num">1 回</td><td class="num">550,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">1,800,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">プロジェクト合計 <strong>¥ 22,400,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>③ セキュリティコンプライアンス (ISMS-P)</h3>
+            <span class="pid">PRJ-SEC-2026-C3 · 2026-05 ~ 2026-12</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>人員</h4>
+              <table class="inner">
+                <thead><tr><th>役割</th><th class="num">M/M</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>セキュリティ PM</td><td class="num">4.0</td><td class="num">2,800,000</td></tr>
+                  <tr><td>セキュリティコンサルタント ×2</td><td class="num">6.0</td><td class="num">4,200,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">7,000,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>資材</h4>
+              <table class="inner">
+                <thead><tr><th>品目</th><th class="num">数量</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>SIEM ソリューションライセンス</td><td class="num">1 年</td><td class="num">2,200,000</td></tr>
+                  <tr><td>脆弱性スキャナー</td><td class="num">1 年</td><td class="num">840,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">3,040,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>その他経費</h4>
+              <table class="inner">
+                <thead><tr><th>項目</th><th class="num">-</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>認証審査料</td><td class="num">1 回</td><td class="num">1,200,000</td></tr>
+                  <tr><td>模擬侵入テスト</td><td class="num">2 回</td><td class="num">800,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">2,000,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">プロジェクト合計 <strong>¥ 12,040,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>④ 社内決済システムリニューアル</h3>
+            <span class="pid">PRJ-PAY-2026-D4 · 2026-04 ~ 2026-10</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>人員</h4>
+              <table class="inner">
+                <thead><tr><th>役割</th><th class="num">M/M</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>PM</td><td class="num">6.0</td><td class="num">4,200,000</td></tr>
+                  <tr><td>Backend Eng. ×3</td><td class="num">18.0</td><td class="num">10,440,000</td></tr>
+                  <tr><td>Frontend Eng. ×2</td><td class="num">10.0</td><td class="num">5,500,000</td></tr>
+                  <tr><td>QA Eng.</td><td class="num">5.0</td><td class="num">2,500,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">22,640,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>資材</h4>
+              <table class="inner">
+                <thead><tr><th>品目</th><th class="num">数量</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>PG 連携手数料 (前払)</td><td class="num">1</td><td class="num">800,000</td></tr>
+                  <tr><td>PCI-DSS 認証アドバイザリー</td><td class="num">1 式</td><td class="num">1,500,000</td></tr>
+                  <tr><td>トークン化 vault SaaS</td><td class="num">1 年</td><td class="num">1,260,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">3,560,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>その他経費</h4>
+              <table class="inner">
+                <thead><tr><th>項目</th><th class="num">-</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>外部セキュリティ診断</td><td class="num">2 回</td><td class="num">1,100,000</td></tr>
+                  <tr><td>負荷テスト環境レンタル</td><td class="num">2 ヶ月</td><td class="num">480,000</td></tr>
+                  <tr><td>教育 (PCI-DSS)</td><td class="num">10 名</td><td class="num">300,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">1,880,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">プロジェクト合計 <strong>¥ 28,080,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>⑤ グローバル CDN 移行</h3>
+            <span class="pid">PRJ-INFRA-2026-E5 · 2026-06 ~ 2026-09</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>人員</h4>
+              <table class="inner">
+                <thead><tr><th>役割</th><th class="num">M/M</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>ネットワーク PM</td><td class="num">3.0</td><td class="num">2,250,000</td></tr>
+                  <tr><td>SRE ×2</td><td class="num">8.0</td><td class="num">5,200,000</td></tr>
+                  <tr><td>Backend Eng.</td><td class="num">4.0</td><td class="num">2,320,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">9,770,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>資材</h4>
+              <table class="inner">
+                <thead><tr><th>品目</th><th class="num">数量</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>Cloudflare Enterprise</td><td class="num">1 年</td><td class="num">3,600,000</td></tr>
+                  <tr><td>WAF ルールセットライセンス</td><td class="num">1 年</td><td class="num">960,000</td></tr>
+                  <tr><td>エグレストラフィック (前払)</td><td class="num">200 TB</td><td class="num">1,800,000</td></tr>
+                  <tr><td>R2 ストレージ (前払)</td><td class="num">1 年</td><td class="num">720,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">7,080,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>その他経費</h4>
+              <table class="inner">
+                <thead><tr><th>項目</th><th class="num">-</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>海外リージョン検収 (シンガポール)</td><td class="num">1 回</td><td class="num">520,000</td></tr>
+                  <tr><td>移行コンサルティング</td><td class="num">1 式</td><td class="num">950,000</td></tr>
+                  <tr><td>障害対応夜間手当</td><td class="num">-</td><td class="num">380,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">1,850,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">プロジェクト合計 <strong>¥ 18,700,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>⑥ データガバナンス導入</h3>
+            <span class="pid">PRJ-GOV-2026-F6 · 2026-05 ~ 2026-11</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>人員</h4>
+              <table class="inner">
+                <thead><tr><th>役割</th><th class="num">M/M</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>データガバナンスリード</td><td class="num">6.0</td><td class="num">4,800,000</td></tr>
+                  <tr><td>Data Steward ×2</td><td class="num">10.0</td><td class="num">5,500,000</td></tr>
+                  <tr><td>データエンジニア</td><td class="num">5.0</td><td class="num">2,750,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">13,050,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>資材</h4>
+              <table class="inner">
+                <thead><tr><th>品目</th><th class="num">数量</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>Collibra (Catalog)</td><td class="num">1 年</td><td class="num">2,880,000</td></tr>
+                  <tr><td>Monte Carlo (Data Observability)</td><td class="num">1 年</td><td class="num">1,920,000</td></tr>
+                  <tr><td>マスキングソリューション</td><td class="num">1 年</td><td class="num">1,140,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">5,940,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>その他経費</h4>
+              <table class="inner">
+                <thead><tr><th>項目</th><th class="num">-</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>外部ガバナンスコンサルティング</td><td class="num">3 ヶ月</td><td class="num">2,100,000</td></tr>
+                  <tr><td>全社教育 (e-learning)</td><td class="num">200 名</td><td class="num">600,000</td></tr>
+                  <tr><td>ワークショップ (オフライン)</td><td class="num">2 回</td><td class="num">320,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">3,020,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">プロジェクト合計 <strong>¥ 22,010,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>⑦ モバイルアプリリニューアル</h3>
+            <span class="pid">PRJ-MOB-2026-G7 · 2026-06 ~ 2026-12</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>人員</h4>
+              <table class="inner">
+                <thead><tr><th>役割</th><th class="num">M/M</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>モバイル PM</td><td class="num">7.0</td><td class="num">4,900,000</td></tr>
+                  <tr><td>iOS Eng. ×2</td><td class="num">12.0</td><td class="num">7,200,000</td></tr>
+                  <tr><td>Android Eng. ×2</td><td class="num">12.0</td><td class="num">6,840,000</td></tr>
+                  <tr><td>UX デザイナー</td><td class="num">5.0</td><td class="num">2,750,000</td></tr>
+                  <tr><td>QA Eng.</td><td class="num">6.0</td><td class="num">2,880,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">24,570,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>資材</h4>
+              <table class="inner">
+                <thead><tr><th>品目</th><th class="num">数量</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>Apple Developer Enterprise</td><td class="num">1 年</td><td class="num">45,000</td></tr>
+                  <tr><td>Google Play Console</td><td class="num">1</td><td class="num">3,500</td></tr>
+                  <tr><td>Firebase (Blaze)</td><td class="num">7 ヶ月</td><td class="num">840,000</td></tr>
+                  <tr><td>Sentry (Mobile)</td><td class="num">1 年</td><td class="num">540,000</td></tr>
+                  <tr><td>デザインライセンス (Figma Org)</td><td class="num">1 年</td><td class="num">360,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">1,788,500</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>その他経費</h4>
+              <table class="inner">
+                <thead><tr><th>項目</th><th class="num">-</th><th class="num">金額</th></tr></thead>
+                <tbody>
+                  <tr><td>ユーザビリティテスト (外部パネル)</td><td class="num">3 回</td><td class="num">960,000</td></tr>
+                  <tr><td>アクセシビリティ監査</td><td class="num">1 回</td><td class="num">480,000</td></tr>
+                  <tr><td>ストアマーケティング素材制作</td><td class="num">1 式</td><td class="num">620,000</td></tr>
+                  <tr><td>テストデバイス (10台)</td><td class="num">10</td><td class="num">1,200,000</td></tr>
+                  <tr class="sub"><td colspan="2">小計</td><td class="num">3,260,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">プロジェクト合計 <strong>¥ 29,618,500</strong></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grand">
+    <table>
+      <tr><td>税抜合計</td><td class="num">146,848,500</td></tr>
+      <tr><td>消費税 (10%)</td><td class="num">14,684,850</td></tr>
+      <tr class="total"><td>請求金額</td><td class="num">¥ 161,533,350</td></tr>
+    </table>
+  </div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+services:
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: htp-gotenberg
+    ports:
+      - "3000:3000"
+    command:
+      - "gotenberg"
+      - "--api-port=3000"
+
+  weasyprint:
+    build: ./weasyprint
+    container_name: htp-weasyprint
+    ports:
+      - "5001:5000"

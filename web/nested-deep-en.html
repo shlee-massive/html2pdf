@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice — 3-level nesting + page breaks</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.5px;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .meta { color: #6b6b73; font-size: 11px; margin-bottom: 18px; }
+  .meta strong { color: #1a1a1a; }
+  .note {
+    background: #fff8e6;
+    border-left: 3px solid #f59e0b;
+    padding: 6px 10px;
+    font-size: 10.5px;
+    color: #78350f;
+    margin-bottom: 14px;
+  }
+
+  table { border-collapse: collapse; }
+
+  /* L1: Department */
+  table.l1 {
+    width: 100%;
+    table-layout: fixed;
+    border: 1px solid #1a1a1a;
+  }
+  table.l1 > thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.l1 > tbody > tr > td {
+    border-top: 1px solid #d8d8de;
+    padding: 12px 10px;
+    vertical-align: top;
+  }
+  .dept-header {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+  }
+  .dept-header .code { font-family: "SF Mono", Menlo, monospace; color: #6b6b73; font-size: 10.5px; }
+
+  /* L2: Project */
+  table.l2 {
+    width: 100%;
+    table-layout: fixed;
+    margin-bottom: 10px;
+    border: 1px solid #d8d8de;
+  }
+  table.l2 > thead th {
+    background: #fafafc;
+    color: #1a1a1a;
+    padding: 6px 8px;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 600;
+    border-bottom: 1px solid #d8d8de;
+  }
+  table.l2 > tbody > tr > td {
+    border-top: 1px solid #ececf0;
+    padding: 8px;
+    vertical-align: top;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .proj-label {
+    width: 30%;
+    font-weight: 600;
+  }
+  .proj-label .meta-line {
+    display: block;
+    font-weight: 400;
+    color: #6b6b73;
+    font-size: 9.5px;
+    margin-top: 2px;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+
+  /* L3: Item */
+  table.l3 { width: 100%; font-size: 9.5px; }
+  table.l3 th, table.l3 td {
+    border-bottom: 1px solid #ececf0;
+    padding: 3px 6px;
+    text-align: left;
+  }
+  table.l3 th {
+    background: #fafafc;
+    font-weight: 600;
+    color: #6b6b73;
+    font-size: 9px;
+  }
+  table.l3 td.num, table.l3 th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.l3 tr.sub td {
+    background: #fafafc;
+    font-weight: 600;
+    border-bottom: none;
+    text-align: right;
+  }
+
+  .dept-total {
+    margin-top: 6px;
+    text-align: right;
+    font-size: 11.5px;
+    border-top: 1px solid #1a1a1a;
+    padding-top: 6px;
+  }
+  .dept-total strong { font-size: 13.5px; margin-left: 8px; font-variant-numeric: tabular-nums; }
+
+  .grand {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .grand table { width: 320px; }
+  .grand td { padding: 6px 10px; font-size: 11.5px; }
+  .grand td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .grand tr.total td {
+    font-weight: 700;
+    font-size: 15px;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <h1>Invoice — Department / Project / Item (3-level nesting)</h1>
+  <div class="meta">
+    <strong>INV-2026-0420</strong> · Issued 2026-05-26 · Bill to: MassiveLinks, Inc. · Due: 2026-06-30
+  </div>
+  <div class="note">
+    Page-break test — department tables span across pages, while inner project rows must stay grouped via <code>page-break-inside: avoid</code>.
+  </div>
+
+  <table class="l1">
+    <thead>
+      <tr><th>Breakdown by department / project / item</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="dept-header">
+            <span>Platform Division</span>
+            <span class="code">DEPT-PLT</span>
+          </div>
+
+          <table class="l2">
+            <thead>
+              <tr><th style="width:30%">Project</th><th>Item details</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="proj-label">Data Platform v3<span class="meta-line">PRJ-PLT-001 · 2026-Q2</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>Item</th><th class="num" style="width:60px">Qty</th><th class="num" style="width:80px">Unit price</th><th class="num" style="width:100px">Amount</th></tr></thead>
+                    <tbody>
+                      <tr><td>Snowflake credits (Enterprise)</td><td class="num">8,000</td><td class="num">2.20</td><td class="num">17,600</td></tr>
+                      <tr><td>dbt Cloud Team (1 yr)</td><td class="num">1</td><td class="num">5,500</td><td class="num">5,500</td></tr>
+                      <tr><td>Data Engineer (M/M)</td><td class="num">8</td><td class="num">4,200</td><td class="num">33,600</td></tr>
+                      <tr class="sub"><td colspan="3">Subtotal</td><td class="num">56,700</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">Real-time Event Bus<span class="meta-line">PRJ-PLT-002 · 2026-Q2~Q3</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>Item</th><th class="num" style="width:60px">Qty</th><th class="num" style="width:80px">Unit price</th><th class="num" style="width:100px">Amount</th></tr></thead>
+                    <tbody>
+                      <tr><td>Confluent Cloud (Standard)</td><td class="num">6 mo</td><td class="num">2,900</td><td class="num">17,400</td></tr>
+                      <tr><td>Schema registry operations</td><td class="num">6 mo</td><td class="num">600</td><td class="num">3,600</td></tr>
+                      <tr><td>Backend Eng. (M/M)</td><td class="num">10</td><td class="num">4,500</td><td class="num">45,000</td></tr>
+                      <tr><td>Monitoring (Datadog APM)</td><td class="num">1 yr</td><td class="num">7,000</td><td class="num">7,000</td></tr>
+                      <tr class="sub"><td colspan="3">Subtotal</td><td class="num">73,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="dept-total">Platform Division total <strong>$ 129,700</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="dept-header">
+            <span>AI/ML Division</span>
+            <span class="code">DEPT-AI</span>
+          </div>
+
+          <table class="l2">
+            <thead>
+              <tr><th style="width:30%">Project</th><th>Item details</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="proj-label">LLM Inference Infrastructure<span class="meta-line">PRJ-AI-101 · 2026-Q2~Q4</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>Item</th><th class="num" style="width:60px">Qty</th><th class="num" style="width:80px">Unit price</th><th class="num" style="width:100px">Amount</th></tr></thead>
+                    <tbody>
+                      <tr><td>A100 80GB instance (monthly)</td><td class="num">8 mo</td><td class="num">7,500</td><td class="num">60,000</td></tr>
+                      <tr><td>vLLM operations consulting</td><td class="num">2</td><td class="num">5,000</td><td class="num">10,000</td></tr>
+                      <tr><td>MLOps Eng. (M/M)</td><td class="num">8</td><td class="num">5,000</td><td class="num">40,000</td></tr>
+                      <tr><td>Vector DB (production)</td><td class="num">1 yr</td><td class="num">11,000</td><td class="num">11,000</td></tr>
+                      <tr class="sub"><td colspan="3">Subtotal</td><td class="num">121,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">Model Evaluation Pipeline<span class="meta-line">PRJ-AI-102 · 2026-Q3</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>Item</th><th class="num" style="width:60px">Qty</th><th class="num" style="width:80px">Unit price</th><th class="num" style="width:100px">Amount</th></tr></thead>
+                    <tbody>
+                      <tr><td>Evaluation dataset licenses</td><td class="num">3</td><td class="num">3,200</td><td class="num">9,600</td></tr>
+                      <tr><td>Annotation outsourcing (annotator-hr)</td><td class="num">800</td><td class="num">17</td><td class="num">13,600</td></tr>
+                      <tr><td>ML Eng. (M/M)</td><td class="num">4</td><td class="num">4,800</td><td class="num">19,200</td></tr>
+                      <tr class="sub"><td colspan="3">Subtotal</td><td class="num">42,400</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">RAG Search Quality<span class="meta-line">PRJ-AI-103 · 2026-Q3~Q4</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>Item</th><th class="num" style="width:60px">Qty</th><th class="num" style="width:80px">Unit price</th><th class="num" style="width:100px">Amount</th></tr></thead>
+                    <tbody>
+                      <tr><td>Embedding model fine-tuning (external)</td><td class="num">1 lot</td><td class="num">21,500</td><td class="num">21,500</td></tr>
+                      <tr><td>Reranker model license</td><td class="num">1 yr</td><td class="num">7,400</td><td class="num">7,400</td></tr>
+                      <tr><td>Backend Eng. (M/M)</td><td class="num">6</td><td class="num">4,500</td><td class="num">27,000</td></tr>
+                      <tr class="sub"><td colspan="3">Subtotal</td><td class="num">55,900</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="dept-total">AI/ML Division total <strong>$ 219,300</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="dept-header">
+            <span>Security &amp; Compliance Division</span>
+            <span class="code">DEPT-SEC</span>
+          </div>
+
+          <table class="l2">
+            <thead>
+              <tr><th style="width:30%">Project</th><th>Item details</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="proj-label">ISMS-P Recertification<span class="meta-line">PRJ-SEC-201 · 2026-Q3</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>Item</th><th class="num" style="width:60px">Qty</th><th class="num" style="width:80px">Unit price</th><th class="num" style="width:100px">Amount</th></tr></thead>
+                    <tbody>
+                      <tr><td>Certification body audit fee</td><td class="num">1</td><td class="num">11,200</td><td class="num">11,200</td></tr>
+                      <tr><td>Pre-audit consulting (external)</td><td class="num">3 mo</td><td class="num">5,200</td><td class="num">15,600</td></tr>
+                      <tr><td>Security PM (M/M)</td><td class="num">3</td><td class="num">5,400</td><td class="num">16,200</td></tr>
+                      <tr class="sub"><td colspan="3">Subtotal</td><td class="num">43,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">Zero Trust Adoption<span class="meta-line">PRJ-SEC-202 · 2026-Q3~Q4</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>Item</th><th class="num" style="width:60px">Qty</th><th class="num" style="width:80px">Unit price</th><th class="num" style="width:100px">Amount</th></tr></thead>
+                    <tbody>
+                      <tr><td>ZTNA solution license</td><td class="num">300 user-yr</td><td class="num">140</td><td class="num">42,000</td></tr>
+                      <tr><td>IdP integration consulting</td><td class="num">1 lot</td><td class="num">13,800</td><td class="num">13,800</td></tr>
+                      <tr><td>Security Eng. (M/M)</td><td class="num">5</td><td class="num">5,000</td><td class="num">25,000</td></tr>
+                      <tr class="sub"><td colspan="3">Subtotal</td><td class="num">80,800</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="dept-total">Security &amp; Compliance Division total <strong>$ 123,800</strong></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grand">
+    <table>
+      <tr><td>Subtotal</td><td class="num">472,800</td></tr>
+      <tr><td>Sales tax (10%)</td><td class="num">47,280</td></tr>
+      <tr class="total"><td>Total due</td><td class="num">$ 520,080</td></tr>
+    </table>
+  </div>
+</body>
+</html>

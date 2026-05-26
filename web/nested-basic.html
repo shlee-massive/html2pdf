@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>청구서 — 카테고리별 (1단 중첩)</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  body {
+    font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 11px;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .meta { color: #6b6b73; font-size: 11px; margin-bottom: 20px; }
+  .meta strong { color: #1a1a1a; }
+
+  table { border-collapse: collapse; width: 100%; }
+  table.outer { table-layout: fixed; border: 1px solid #1a1a1a; }
+  table.outer > thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  table.outer > tbody > tr > td {
+    border-top: 1px solid #d8d8de;
+    padding: 12px 10px;
+    vertical-align: top;
+  }
+  .cat-label {
+    font-weight: 700;
+    font-size: 12px;
+    color: #1a1a1a;
+    width: 22%;
+  }
+  .cat-label .desc { display: block; font-weight: 400; color: #6b6b73; margin-top: 4px; font-size: 10px; }
+
+  table.inner { width: 100%; font-size: 10.5px; }
+  table.inner th, table.inner td {
+    border-bottom: 1px solid #ececf0;
+    padding: 5px 6px;
+    text-align: left;
+  }
+  table.inner th {
+    background: #fafafc;
+    font-weight: 600;
+    color: #6b6b73;
+    font-size: 10px;
+  }
+  table.inner td.num, table.inner th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.inner tr:last-child td { border-bottom: none; }
+
+  .subtotal-row td {
+    background: #fafafc;
+    font-weight: 600;
+    text-align: right;
+  }
+  .grand {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .grand table { width: 280px; }
+  .grand td { padding: 6px 10px; }
+  .grand tr.total td {
+    font-weight: 700;
+    font-size: 14px;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 10px;
+  }
+  .grand td.num { text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <h1>청구서</h1>
+  <div class="meta">
+    <strong>INV-2026-0418</strong> · 발행일 2026-05-26 · 청구처: (주)매시브링크스 · 결제기한: 2026-06-25
+  </div>
+
+  <table class="outer">
+    <thead>
+      <tr>
+        <th style="width:22%">카테고리</th>
+        <th>세부 내역</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="cat-label">하드웨어<span class="desc">서버 · 네트워크 장비</span></td>
+        <td>
+          <table class="inner">
+            <thead>
+              <tr><th>품목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:90px">단가</th><th class="num" style="width:100px">소계</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Dell PowerEdge R760 (32C/256GB)</td><td class="num">2</td><td class="num">4,800,000</td><td class="num">9,600,000</td></tr>
+              <tr><td>Cisco Catalyst 9300-48P 스위치</td><td class="num">1</td><td class="num">3,200,000</td><td class="num">3,200,000</td></tr>
+              <tr><td>NVMe 1.92TB SSD (서버용)</td><td class="num">8</td><td class="num">420,000</td><td class="num">3,360,000</td></tr>
+              <tr class="subtotal-row"><td colspan="3">소계</td><td class="num">16,160,000</td></tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="cat-label">소프트웨어<span class="desc">라이선스 · 연간 구독</span></td>
+        <td>
+          <table class="inner">
+            <thead>
+              <tr><th>품목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:90px">단가</th><th class="num" style="width:100px">소계</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>VMware vSphere Enterprise Plus (CPU 라이선스, 1년)</td><td class="num">4</td><td class="num">1,250,000</td><td class="num">5,000,000</td></tr>
+              <tr><td>Datadog Pro (Host, 1년)</td><td class="num">20</td><td class="num">180,000</td><td class="num">3,600,000</td></tr>
+              <tr><td>GitHub Enterprise (Seat, 1년)</td><td class="num">15</td><td class="num">252,000</td><td class="num">3,780,000</td></tr>
+              <tr class="subtotal-row"><td colspan="3">소계</td><td class="num">12,380,000</td></tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="cat-label">서비스<span class="desc">컨설팅 · 운영 지원</span></td>
+        <td>
+          <table class="inner">
+            <thead>
+              <tr><th>품목</th><th class="num" style="width:60px">기간</th><th class="num" style="width:90px">단가</th><th class="num" style="width:100px">소계</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>인프라 마이그레이션 컨설팅</td><td class="num">3 개월</td><td class="num">8,500,000</td><td class="num">25,500,000</td></tr>
+              <tr><td>운영 지원 (SLA 9×5, NBD)</td><td class="num">12 개월</td><td class="num">1,200,000</td><td class="num">14,400,000</td></tr>
+              <tr class="subtotal-row"><td colspan="3">소계</td><td class="num">39,900,000</td></tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grand">
+    <table>
+      <tr><td>합계 (공급가액)</td><td class="num">68,440,000</td></tr>
+      <tr><td>부가세 (10%)</td><td class="num">6,844,000</td></tr>
+      <tr class="total"><td>총 청구액</td><td class="num">₩ 75,284,000</td></tr>
+    </table>
+  </div>
+</body>
+</html>

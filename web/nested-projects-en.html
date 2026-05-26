@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Invoice — Nested by Project</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.5px;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .meta { color: #6b6b73; font-size: 11px; margin-bottom: 18px; }
+  .meta strong { color: #1a1a1a; }
+
+  table { border-collapse: collapse; }
+  table.outer {
+    width: 100%;
+    table-layout: fixed;
+    border: 1px solid #1a1a1a;
+  }
+  table.outer > thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.outer > tbody > tr > td {
+    border-top: 1px solid #d8d8de;
+    padding: 12px 10px;
+    vertical-align: top;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .proj-header {
+    background: #fafafc;
+    padding: 8px 10px;
+    margin: -12px -10px 10px;
+    border-bottom: 1px solid #ececf0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .proj-header h3 { margin: 0; font-size: 13px; }
+  .proj-header .pid { color: #6b6b73; font-size: 10.5px; font-family: "SF Mono", Menlo, monospace; }
+
+  .nest-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .nest-grid > div { min-width: 0; }
+  .nest-grid h4 {
+    margin: 0 0 4px;
+    font-size: 10px;
+    color: #6b6b73;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+
+  table.inner { width: 100%; font-size: 9.5px; }
+  table.inner th, table.inner td {
+    border-bottom: 1px solid #ececf0;
+    padding: 4px 5px;
+    text-align: left;
+  }
+  table.inner th {
+    background: #fafafc;
+    font-weight: 600;
+    color: #6b6b73;
+    font-size: 9px;
+  }
+  table.inner td.num, table.inner th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.inner tr.sub td {
+    background: #fafafc;
+    font-weight: 600;
+    border-bottom: none;
+    text-align: right;
+  }
+
+  .proj-total {
+    margin-top: 8px;
+    text-align: right;
+    font-size: 11px;
+    border-top: 1px solid #1a1a1a;
+    padding-top: 6px;
+  }
+  .proj-total strong { font-size: 13px; margin-left: 8px; font-variant-numeric: tabular-nums; }
+
+  .grand {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .grand table { width: 300px; }
+  .grand td { padding: 6px 10px; font-size: 11.5px; }
+  .grand td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .grand tr.total td {
+    font-weight: 700;
+    font-size: 15px;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <h1>Invoice — By Project</h1>
+  <div class="meta">
+    <strong>INV-2026-0419</strong> · Issued 2026-05-26 · Bill to: MassiveLinks, Inc. · Due: 2026-06-25
+  </div>
+
+  <table class="outer">
+    <thead>
+      <tr><th>Per-Project Breakdown (Personnel · Materials · Other)</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>1. Data Platform Build-out</h3>
+            <span class="pid">PRJ-DP-2026-A1 · 2026-03 ~ 2026-08</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>Personnel</h4>
+              <table class="inner">
+                <thead><tr><th>Role</th><th class="num">M/M</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>PM (Senior)</td><td class="num">3.0</td><td class="num">16,000</td></tr>
+                  <tr><td>Data Eng. ×2</td><td class="num">10.0</td><td class="num">42,000</td></tr>
+                  <tr><td>Analytics Eng.</td><td class="num">4.0</td><td class="num">17,000</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">75,000</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Materials</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Snowflake Credits</td><td class="num">5,000</td><td class="num">11,000</td></tr>
+                  <tr><td>dbt Cloud (Team)</td><td class="num">1 yr</td><td class="num">5,500</td></tr>
+                  <tr><td>Fivetran Connectors</td><td class="num">8</td><td class="num">7,400</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">23,900</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Other</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">-</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Travel (regional, 4 trips)</td><td class="num">4</td><td class="num">2,500</td></tr>
+                  <tr><td>External consulting</td><td class="num">2 x</td><td class="num">4,600</td></tr>
+                  <tr><td>Training &amp; certification</td><td class="num">-</td><td class="num">1,200</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">8,300</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">Project total <strong>$ 107,200</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>2. AI Model Serving Infrastructure</h3>
+            <span class="pid">PRJ-AI-2026-B2 · 2026-04 ~ 2026-09</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>Personnel</h4>
+              <table class="inner">
+                <thead><tr><th>Role</th><th class="num">M/M</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>ML PM</td><td class="num">2.5</td><td class="num">13,500</td></tr>
+                  <tr><td>ML Eng. ×3</td><td class="num">15.0</td><td class="num">69,000</td></tr>
+                  <tr><td>MLOps Eng.</td><td class="num">5.0</td><td class="num">25,000</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">107,500</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Materials</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>GPU Instances (A100)</td><td class="num">6 mo</td><td class="num">37,000</td></tr>
+                  <tr><td>Vector DB (Pinecone)</td><td class="num">1 yr</td><td class="num">9,200</td></tr>
+                  <tr><td>Model monitoring SaaS</td><td class="num">1 yr</td><td class="num">4,600</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">50,800</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Other</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">-</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Conference reg. (NeurIPS)</td><td class="num">3 ppl</td><td class="num">3,500</td></tr>
+                  <tr><td>Model eval data purchase</td><td class="num">-</td><td class="num">6,200</td></tr>
+                  <tr><td>Security audit</td><td class="num">1 x</td><td class="num">4,200</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">13,900</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">Project total <strong>$ 172,200</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>3. Security Compliance (ISMS-P)</h3>
+            <span class="pid">PRJ-SEC-2026-C3 · 2026-05 ~ 2026-12</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>Personnel</h4>
+              <table class="inner">
+                <thead><tr><th>Role</th><th class="num">M/M</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Security PM</td><td class="num">4.0</td><td class="num">21,500</td></tr>
+                  <tr><td>Security consultants ×2</td><td class="num">6.0</td><td class="num">32,300</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">53,800</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Materials</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>SIEM solution license</td><td class="num">1 yr</td><td class="num">16,900</td></tr>
+                  <tr><td>Vulnerability scanner</td><td class="num">1 yr</td><td class="num">6,500</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">23,400</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Other</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">-</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Certification audit fee</td><td class="num">1 x</td><td class="num">9,200</td></tr>
+                  <tr><td>Penetration testing</td><td class="num">2 x</td><td class="num">6,200</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">15,400</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">Project total <strong>$ 92,600</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>4. Internal Payments System Renewal</h3>
+            <span class="pid">PRJ-PAY-2026-D4 · 2026-04 ~ 2026-10</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>Personnel</h4>
+              <table class="inner">
+                <thead><tr><th>Role</th><th class="num">M/M</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>PM</td><td class="num">6.0</td><td class="num">32,300</td></tr>
+                  <tr><td>Backend Eng. ×3</td><td class="num">18.0</td><td class="num">80,300</td></tr>
+                  <tr><td>Frontend Eng. ×2</td><td class="num">10.0</td><td class="num">42,300</td></tr>
+                  <tr><td>QA Eng.</td><td class="num">5.0</td><td class="num">19,200</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">174,100</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Materials</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>PG integration fee (prepaid)</td><td class="num">1</td><td class="num">6,200</td></tr>
+                  <tr><td>PCI-DSS advisory</td><td class="num">1 lot</td><td class="num">11,500</td></tr>
+                  <tr><td>Tokenization vault SaaS</td><td class="num">1 yr</td><td class="num">9,700</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">27,400</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Other</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">-</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>External security assessment</td><td class="num">2 x</td><td class="num">8,500</td></tr>
+                  <tr><td>Load-test environment rental</td><td class="num">2 mo</td><td class="num">3,700</td></tr>
+                  <tr><td>Training (PCI-DSS)</td><td class="num">10 ppl</td><td class="num">2,300</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">14,500</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">Project total <strong>$ 216,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>5. Global CDN Migration</h3>
+            <span class="pid">PRJ-INFRA-2026-E5 · 2026-06 ~ 2026-09</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>Personnel</h4>
+              <table class="inner">
+                <thead><tr><th>Role</th><th class="num">M/M</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Network PM</td><td class="num">3.0</td><td class="num">17,300</td></tr>
+                  <tr><td>SRE ×2</td><td class="num">8.0</td><td class="num">40,000</td></tr>
+                  <tr><td>Backend Eng.</td><td class="num">4.0</td><td class="num">17,800</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">75,100</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Materials</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Cloudflare Enterprise</td><td class="num">1 yr</td><td class="num">27,700</td></tr>
+                  <tr><td>WAF ruleset license</td><td class="num">1 yr</td><td class="num">7,400</td></tr>
+                  <tr><td>Egress traffic (prepaid)</td><td class="num">200 TB</td><td class="num">13,800</td></tr>
+                  <tr><td>R2 storage (prepaid)</td><td class="num">1 yr</td><td class="num">5,500</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">54,400</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Other</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">-</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Overseas region inspection (Singapore)</td><td class="num">1 x</td><td class="num">4,000</td></tr>
+                  <tr><td>Migration consulting</td><td class="num">1 lot</td><td class="num">7,300</td></tr>
+                  <tr><td>On-call night premium</td><td class="num">-</td><td class="num">2,900</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">14,200</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">Project total <strong>$ 143,700</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>6. Data Governance Rollout</h3>
+            <span class="pid">PRJ-GOV-2026-F6 · 2026-05 ~ 2026-11</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>Personnel</h4>
+              <table class="inner">
+                <thead><tr><th>Role</th><th class="num">M/M</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Data Governance Lead</td><td class="num">6.0</td><td class="num">37,000</td></tr>
+                  <tr><td>Data Steward ×2</td><td class="num">10.0</td><td class="num">42,300</td></tr>
+                  <tr><td>Data Eng.</td><td class="num">5.0</td><td class="num">21,200</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">100,500</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Materials</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Collibra (Catalog)</td><td class="num">1 yr</td><td class="num">22,200</td></tr>
+                  <tr><td>Monte Carlo (Data Observability)</td><td class="num">1 yr</td><td class="num">14,800</td></tr>
+                  <tr><td>Masking solution</td><td class="num">1 yr</td><td class="num">8,800</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">45,800</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Other</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">-</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>External governance consulting</td><td class="num">3 mo</td><td class="num">16,200</td></tr>
+                  <tr><td>Company-wide training (e-learning)</td><td class="num">200 ppl</td><td class="num">4,600</td></tr>
+                  <tr><td>Workshops (offline)</td><td class="num">2 x</td><td class="num">2,500</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">23,300</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">Project total <strong>$ 169,600</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="proj-header">
+            <h3>7. Mobile App Renewal</h3>
+            <span class="pid">PRJ-MOB-2026-G7 · 2026-06 ~ 2026-12</span>
+          </div>
+          <div class="nest-grid">
+            <div>
+              <h4>Personnel</h4>
+              <table class="inner">
+                <thead><tr><th>Role</th><th class="num">M/M</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Mobile PM</td><td class="num">7.0</td><td class="num">37,700</td></tr>
+                  <tr><td>iOS Eng. ×2</td><td class="num">12.0</td><td class="num">55,400</td></tr>
+                  <tr><td>Android Eng. ×2</td><td class="num">12.0</td><td class="num">52,600</td></tr>
+                  <tr><td>UX Designer</td><td class="num">5.0</td><td class="num">21,200</td></tr>
+                  <tr><td>QA Eng.</td><td class="num">6.0</td><td class="num">22,200</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">189,100</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Materials</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Apple Developer Enterprise</td><td class="num">1 yr</td><td class="num">350</td></tr>
+                  <tr><td>Google Play Console</td><td class="num">1</td><td class="num">30</td></tr>
+                  <tr><td>Firebase (Blaze)</td><td class="num">7 mo</td><td class="num">6,500</td></tr>
+                  <tr><td>Sentry (Mobile)</td><td class="num">1 yr</td><td class="num">4,200</td></tr>
+                  <tr><td>Design license (Figma Org)</td><td class="num">1 yr</td><td class="num">2,800</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">13,880</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <h4>Other</h4>
+              <table class="inner">
+                <thead><tr><th>Item</th><th class="num">-</th><th class="num">Amount</th></tr></thead>
+                <tbody>
+                  <tr><td>Usability testing (external panel)</td><td class="num">3 x</td><td class="num">7,400</td></tr>
+                  <tr><td>Accessibility audit</td><td class="num">1 x</td><td class="num">3,700</td></tr>
+                  <tr><td>Store marketing creative</td><td class="num">1 lot</td><td class="num">4,800</td></tr>
+                  <tr><td>Test devices (10 units)</td><td class="num">10</td><td class="num">9,200</td></tr>
+                  <tr class="sub"><td colspan="2">Subtotal</td><td class="num">25,100</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="proj-total">Project total <strong>$ 228,080</strong></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grand">
+    <table>
+      <tr><td>Subtotal</td><td class="num">1,129,380</td></tr>
+      <tr><td>Sales tax (10%)</td><td class="num">112,938</td></tr>
+      <tr class="total"><td>Total due</td><td class="num">$ 1,242,318</td></tr>
+    </table>
+  </div>
+</body>
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>請求書 — 総合ストレステスト</title>
+<style>
+  /* E. @page マージンボックス (ページ番号 / running header) — WeasyPrint/Prince のみ対応 */
+  @page {
+    size: A4;
+    margin: 18mm 14mm 20mm;
+    @top-right {
+      content: "INV-2026-Y-0001 · マッシブリンクス株式会社";
+      font-family: "Noto Sans JP", "Noto Sans CJK JP", sans-serif;
+      font-size: 9px;
+      color: #6b6b73;
+    }
+    @bottom-center {
+      content: counter(page) " / " counter(pages);
+      font-family: "Noto Sans JP", "Noto Sans CJK JP", sans-serif;
+      font-size: 9.5px;
+      color: #6b6b73;
+    }
+    @bottom-right {
+      content: "発行 2026-05-26";
+      font-family: "Noto Sans JP", "Noto Sans CJK JP", sans-serif;
+      font-size: 9px;
+      color: #6b6b73;
+    }
+  }
+  @page :first {
+    @top-right { content: ""; }
+  }
+
+  body {
+    font-family: "Noto Sans JP", "Noto Sans CJK JP", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 10.5px;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  h2 {
+    font-size: 13px;
+    margin: 22px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #1a1a1a;
+    letter-spacing: -0.005em;
+  }
+  h2 .tag {
+    font-size: 9.5px;
+    color: #6b6b73;
+    font-weight: 400;
+    margin-left: 8px;
+    letter-spacing: 0.04em;
+  }
+  .meta { color: #6b6b73; font-size: 11px; }
+  .meta strong { color: #1a1a1a; }
+
+  /* F. ロゴ/QR — インラインSVG */
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .top .left { flex: 1; }
+  .top .right { text-align: right; }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .logo svg { width: 28px; height: 28px; }
+  .logo-text {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+  .barcode { display: block; margin-left: auto; }
+
+  table { border-collapse: collapse; }
+
+  /* B+C. 横ワイドマトリックス + rowspan */
+  table.matrix {
+    width: 100%;
+    font-size: 9px;
+    table-layout: auto;
+    border: 1px solid #1a1a1a;
+  }
+  table.matrix thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 5px 4px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 8.5px;
+    border-right: 1px solid #2a2a32;
+    white-space: nowrap;
+  }
+  table.matrix tbody th {
+    background: #fafafc;
+    text-align: left;
+    padding: 5px 6px;
+    border-bottom: 1px solid #ececf0;
+    border-right: 1px solid #d8d8de;
+    font-weight: 600;
+  }
+  table.matrix tbody th.group {
+    background: #1a1a1a;
+    color: #fff;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    width: 22px;
+  }
+  table.matrix tbody td {
+    padding: 5px 4px;
+    border-bottom: 1px solid #ececf0;
+    border-right: 1px solid #ececf0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  table.matrix tfoot td, table.matrix tfoot th {
+    background: #fafafc;
+    font-weight: 700;
+    border-top: 2px solid #1a1a1a;
+    padding: 6px 4px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  table.matrix tfoot th { text-align: left; }
+  table.matrix td.total, table.matrix th.total {
+    background: #fff8e6;
+    font-weight: 600;
+  }
+
+  /* A. 長い単一テーブル (thead 繰り返し) */
+  table.items {
+    width: 100%;
+    font-size: 10px;
+    border: 1px solid #1a1a1a;
+  }
+  table.items thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    /* thead をページごとに自動繰り返し */
+  }
+  table.items thead { display: table-header-group; }
+  table.items tbody tr { page-break-inside: avoid; break-inside: avoid; }
+  table.items td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #ececf0;
+    vertical-align: top;
+  }
+  table.items td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.items tr.cat-head td {
+    background: #fafafc;
+    font-weight: 700;
+    border-top: 1px solid #1a1a1a;
+    font-size: 10.5px;
+    color: #1a1a1a;
+  }
+  table.items tfoot td {
+    background: #fafafc;
+    font-weight: 700;
+    border-top: 2px solid #1a1a1a;
+    padding: 8px;
+    text-align: right;
+  }
+
+  /* D. 長いテキスト / URL / CJK */
+  .longcell {
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 9px;
+    color: #6b6b73;
+    line-height: 1.45;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* F. サイン + QR ブロック */
+  .signatures {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    page-break-inside: avoid;
+  }
+  .sig-box {
+    flex: 1;
+    border: 1px solid #d8d8de;
+    padding: 12px;
+    background: #fff;
+  }
+  .sig-box h3 { font-size: 11px; margin: 0 0 6px; color: #6b6b73; font-weight: 600; }
+  .sig-box .line {
+    border-bottom: 1px solid #1a1a1a;
+    height: 36px;
+    margin: 14px 0 6px;
+    position: relative;
+  }
+  .sig-box .line svg { position: absolute; bottom: 2px; left: 4px; height: 32px; }
+  .sig-box .name { font-size: 10.5px; }
+  .sig-box .name strong { display: block; font-size: 12px; }
+  .qr-box {
+    width: 96px;
+    text-align: center;
+    border: 1px solid #d8d8de;
+    padding: 10px;
+    background: #fff;
+  }
+  .qr-box svg { width: 76px; height: 76px; display: block; margin: 0 auto 4px; }
+  .qr-box .label { font-size: 8.5px; color: #6b6b73; }
+
+  .grand {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .grand table { width: 340px; }
+  .grand td { padding: 6px 12px; font-size: 11.5px; }
+  .grand td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .grand tr.total td {
+    font-weight: 700;
+    font-size: 16px;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="left">
+    <div class="logo">
+      <!-- F. インラインSVGロゴ -->
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="28" height="28" rx="6" fill="#1a1a1a"/>
+        <path d="M9 22 L9 10 L13 10 L16 16 L19 10 L23 10 L23 22 L20 22 L20 14 L17 20 L15 20 L12 14 L12 22 Z" fill="#fff"/>
+      </svg>
+      <span class="logo-text">MassiveLinks Co., Ltd.</span>
+    </div>
+    <h1>年間総合請求書</h1>
+    <div class="meta">
+      <strong>INV-2026-Y-0001</strong> · 発行日 2026-05-26 · 支払期限 2026-06-30<br>
+      請求先: マッシブリンクス株式会社 / 代表 イ・サンヒョク / 事業者登録 123-45-67890
+    </div>
+  </div>
+  <div class="right">
+    <!-- F. インラインSVGバーコード (Code-39 風ダミー) -->
+    <svg class="barcode" width="180" height="42" viewBox="0 0 180 42" xmlns="http://www.w3.org/2000/svg">
+      <rect width="180" height="42" fill="#fff"/>
+      <g fill="#1a1a1a">
+        <rect x="0" y="0" width="2" height="34"/>
+        <rect x="4" y="0" width="1" height="34"/>
+        <rect x="7" y="0" width="3" height="34"/>
+        <rect x="12" y="0" width="1" height="34"/>
+        <rect x="15" y="0" width="2" height="34"/>
+        <rect x="19" y="0" width="3" height="34"/>
+        <rect x="24" y="0" width="1" height="34"/>
+        <rect x="27" y="0" width="2" height="34"/>
+        <rect x="31" y="0" width="1" height="34"/>
+        <rect x="34" y="0" width="3" height="34"/>
+        <rect x="39" y="0" width="2" height="34"/>
+        <rect x="43" y="0" width="1" height="34"/>
+        <rect x="46" y="0" width="3" height="34"/>
+        <rect x="51" y="0" width="1" height="34"/>
+        <rect x="54" y="0" width="2" height="34"/>
+        <rect x="58" y="0" width="3" height="34"/>
+        <rect x="63" y="0" width="1" height="34"/>
+        <rect x="66" y="0" width="2" height="34"/>
+        <rect x="70" y="0" width="3" height="34"/>
+        <rect x="75" y="0" width="1" height="34"/>
+        <rect x="78" y="0" width="2" height="34"/>
+        <rect x="82" y="0" width="1" height="34"/>
+        <rect x="85" y="0" width="3" height="34"/>
+        <rect x="90" y="0" width="2" height="34"/>
+        <rect x="94" y="0" width="1" height="34"/>
+        <rect x="97" y="0" width="3" height="34"/>
+        <rect x="102" y="0" width="1" height="34"/>
+        <rect x="105" y="0" width="2" height="34"/>
+        <rect x="109" y="0" width="3" height="34"/>
+        <rect x="114" y="0" width="1" height="34"/>
+        <rect x="117" y="0" width="2" height="34"/>
+        <rect x="121" y="0" width="3" height="34"/>
+        <rect x="126" y="0" width="1" height="34"/>
+        <rect x="129" y="0" width="2" height="34"/>
+        <rect x="133" y="0" width="1" height="34"/>
+        <rect x="136" y="0" width="3" height="34"/>
+        <rect x="141" y="0" width="2" height="34"/>
+        <rect x="145" y="0" width="1" height="34"/>
+        <rect x="148" y="0" width="3" height="34"/>
+        <rect x="153" y="0" width="2" height="34"/>
+        <rect x="157" y="0" width="1" height="34"/>
+        <rect x="160" y="0" width="3" height="34"/>
+        <rect x="165" y="0" width="2" height="34"/>
+        <rect x="169" y="0" width="1" height="34"/>
+        <rect x="172" y="0" width="3" height="34"/>
+        <rect x="177" y="0" width="2" height="34"/>
+      </g>
+      <text x="90" y="40" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="8" fill="#1a1a1a">*INV2026Y0001*</text>
+    </svg>
+  </div>
+</div>
+
+<!-- B + C. 月別 × カテゴリ マトリックス (rowspan グループ + 12列横幅) -->
+<h2>月別請求マトリックス <span class="tag">B. rowspanグループ・C. 12ヶ月カラム</span></h2>
+<table class="matrix">
+  <thead>
+    <tr>
+      <th></th><th></th>
+      <th>1月</th><th>2月</th><th>3月</th><th>4月</th><th>5月</th><th>6月</th>
+      <th>7月</th><th>8月</th><th>9月</th><th>10月</th><th>11月</th><th>12月</th>
+      <th class="total">年間合計</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="3" class="group">インフラ</th>
+      <th>サーバ・コンピュート</th>
+      <td>3,200</td><td>3,200</td><td>3,400</td><td>3,400</td><td>3,400</td><td>3,600</td>
+      <td>3,800</td><td>4,000</td><td>4,000</td><td>4,200</td><td>4,200</td><td>4,400</td>
+      <td class="total">44,800</td>
+    </tr>
+    <tr>
+      <th>ネットワーク・CDN</th>
+      <td>1,100</td><td>1,100</td><td>1,150</td><td>1,200</td><td>1,200</td><td>1,300</td>
+      <td>1,400</td><td>1,500</td><td>1,500</td><td>1,550</td><td>1,600</td><td>1,700</td>
+      <td class="total">16,300</td>
+    </tr>
+    <tr>
+      <th>ストレージ・バックアップ</th>
+      <td>600</td><td>620</td><td>640</td><td>660</td><td>680</td><td>700</td>
+      <td>720</td><td>740</td><td>760</td><td>780</td><td>800</td><td>820</td>
+      <td class="total">8,520</td>
+    </tr>
+    <tr>
+      <th rowspan="2" class="group">SaaS</th>
+      <th>可観測性・モニタリング</th>
+      <td>900</td><td>900</td><td>900</td><td>900</td><td>900</td><td>900</td>
+      <td>900</td><td>900</td><td>900</td><td>900</td><td>900</td><td>900</td>
+      <td class="total">10,800</td>
+    </tr>
+    <tr>
+      <th>コラボ・開発ツール</th>
+      <td>550</td><td>550</td><td>550</td><td>600</td><td>600</td><td>600</td>
+      <td>620</td><td>620</td><td>620</td><td>650</td><td>650</td><td>650</td>
+      <td class="total">7,260</td>
+    </tr>
+    <tr>
+      <th rowspan="2" class="group">サービス</th>
+      <th>外部コンサル</th>
+      <td>0</td><td>0</td><td>2,500</td><td>2,500</td><td>2,500</td><td>0</td>
+      <td>1,800</td><td>1,800</td><td>0</td><td>3,200</td><td>3,200</td><td>0</td>
+      <td class="total">17,500</td>
+    </tr>
+    <tr>
+      <th>運用支援 (SLA)</th>
+      <td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td>
+      <td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td>
+      <td class="total">14,400</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="2">月別合計 (千円)</th>
+      <td>7,550</td><td>7,570</td><td>10,340</td><td>10,460</td><td>10,480</td><td>8,300</td>
+      <td>10,440</td><td>10,760</td><td>8,980</td><td>12,480</td><td>12,550</td><td>9,670</td>
+      <td class="total">119,580</td>
+    </tr>
+  </tfoot>
+</table>
+
+<!-- A. 長い単一テーブル (thead 繰り返し) — 請求明細 -->
+<h2>詳細明細 <span class="tag">A. 50+行 thead繰り返し・D. 長いURL/CJKセル</span></h2>
+<table class="items">
+  <thead>
+    <tr>
+      <th style="width:28px">#</th>
+      <th>項目・説明</th>
+      <th style="width:60px" class="num">数量</th>
+      <th style="width:80px" class="num">単価 (円)</th>
+      <th style="width:100px" class="num">金額 (円)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="cat-head"><td colspan="5">[1] インフラ — サーバ・コンピュート</td></tr>
+    <tr><td>1</td><td>AWS EC2 m6i.4xlarge オンデマンド (Seoul, ap-northeast-2)<span class="longcell">https://ap-northeast-2.console.aws.amazon.com/ec2/home?region=ap-northeast-2#InstanceDetails:instanceId=i-0a1b2c3d4e5f6g7h8</span></td><td class="num">8,760 h</td><td class="num">92</td><td class="num">805,920</td></tr>
+    <tr><td>2</td><td>AWS EC2 c6g.2xlarge リザーブド 1年 (Tokyo)</td><td class="num">12ヶ月</td><td class="num">31,200</td><td class="num">374,400</td></tr>
+    <tr><td>3</td><td>AWS EBS gp3 (10TB プロビジョン, IOPS 16k)</td><td class="num">12ヶ月</td><td class="num">18,600</td><td class="num">223,200</td></tr>
+    <tr><td>4</td><td>Cloudflare Workers (Bundled, 標準)</td><td class="num">1年</td><td class="num">240,000</td><td class="num">240,000</td></tr>
+    <tr><td>5</td><td>Oracle Cloud Compute (BM.Standard3.64)<span class="longcell">URL: https://cloud.oracle.com/compute/instances/ocid1.instance.oc1.ap-seoul-1.anzwsljrabcdefghijklmnopqrstuvwxyz0123456789ABCDEFG</span></td><td class="num">3ヶ月</td><td class="num">480,000</td><td class="num">1,440,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[2] インフラ — ネットワーク・CDN</td></tr>
+    <tr><td>6</td><td>Cloudflare Pro (Enterprise tier)</td><td class="num">1年</td><td class="num">360,000</td><td class="num">360,000</td></tr>
+    <tr><td>7</td><td>AWS CloudFront (エグレス 200 TB)</td><td class="num">200 TB</td><td class="num">6,200</td><td class="num">1,240,000</td></tr>
+    <tr><td>8</td><td>Akamai ライブストリーミング オプション</td><td class="num">6ヶ月</td><td class="num">120,000</td><td class="num">720,000</td></tr>
+    <tr><td>9</td><td>韓国情報保護振興院 認証書 SSL/TLS Wildcard 3年</td><td class="num">1式</td><td class="num">82,000</td><td class="num">82,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[3] SaaS — モニタリング・開発ツール</td></tr>
+    <tr><td>10</td><td>Datadog Pro (Host) — APM + Log 1年契約<span class="longcell">契約 ID: dd-contract-2026-mass-link-co-ltd-renewal-fy26-q1-asia-pacific-seoul-region-multi-tenant-enterprise-tier</span></td><td class="num">25 ホスト</td><td class="num">21,600</td><td class="num">540,000</td></tr>
+    <tr><td>11</td><td>Sentry Business (月50Mイベント)</td><td class="num">1年</td><td class="num">384,000</td><td class="num">384,000</td></tr>
+    <tr><td>12</td><td>GitHub Enterprise (シートライセンス)</td><td class="num">25シート</td><td class="num">25,200</td><td class="num">630,000</td></tr>
+    <tr><td>13</td><td>JetBrains All Products Pack (組織)</td><td class="num">15シート</td><td class="num">33,600</td><td class="num">504,000</td></tr>
+    <tr><td>14</td><td>Linear Plus (組織)</td><td class="num">22シート</td><td class="num">13,200</td><td class="num">290,400</td></tr>
+    <tr><td>15</td><td>Notion Business (組織)</td><td class="num">35シート</td><td class="num">19,800</td><td class="num">693,000</td></tr>
+    <tr><td>16</td><td>Slack Business+ (組織)</td><td class="num">42シート</td><td class="num">15,600</td><td class="num">655,200</td></tr>
+    <tr><td>17</td><td>Figma Organization (ライセンス)</td><td class="num">12シート</td><td class="num">21,600</td><td class="num">259,200</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[4] データ・ML</td></tr>
+    <tr><td>18</td><td>Snowflake クレジット (Enterprise) — Asia Pacific Seoul</td><td class="num">12,000</td><td class="num">290</td><td class="num">3,480,000</td></tr>
+    <tr><td>19</td><td>dbt Cloud Team (1年契約)</td><td class="num">1</td><td class="num">720,000</td><td class="num">720,000</td></tr>
+    <tr><td>20</td><td>Fivetran コネクタ (Standard tier)</td><td class="num">12個</td><td class="num">120,000</td><td class="num">1,440,000</td></tr>
+    <tr><td>21</td><td>Hugging Face Inference Endpoint (A10G)</td><td class="num">6ヶ月</td><td class="num">340,000</td><td class="num">2,040,000</td></tr>
+    <tr><td>22</td><td>Pinecone Standard (Pods, 1年)</td><td class="num">1</td><td class="num">1,440,000</td><td class="num">1,440,000</td></tr>
+    <tr><td>23</td><td>OpenAI API 使用量 (GPT-4.1 / GPT-5 mix)<span class="longcell">使用キー: sk-proj-aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0uV1wX2yZ3aB4cD5eF6gH7iJ8kL9mN0oP1qR2sT3uV4wX5yZ</span></td><td class="num">1式</td><td class="num">4,200,000</td><td class="num">4,200,000</td></tr>
+    <tr><td>24</td><td>Anthropic Claude API (Sonnet/Opus, Tier 4)</td><td class="num">1式</td><td class="num">3,680,000</td><td class="num">3,680,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[5] セキュリティ・コンプライアンス</td></tr>
+    <tr><td>25</td><td>ISMS-P 認証審査料 (認証機関)</td><td class="num">1回</td><td class="num">1,450,000</td><td class="num">1,450,000</td></tr>
+    <tr><td>26</td><td>外部模擬侵入テスト (半期1回)</td><td class="num">2回</td><td class="num">820,000</td><td class="num">1,640,000</td></tr>
+    <tr><td>27</td><td>SIEM ライセンス (Splunk Enterprise, 1年)</td><td class="num">1</td><td class="num">2,800,000</td><td class="num">2,800,000</td></tr>
+    <tr><td>28</td><td>SAST/DAST スキャナ (Snyk Business)</td><td class="num">1年</td><td class="num">1,260,000</td><td class="num">1,260,000</td></tr>
+    <tr><td>29</td><td>Vault Enterprise (1年)</td><td class="num">1</td><td class="num">1,800,000</td><td class="num">1,800,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[6] 人材・外部委託</td></tr>
+    <tr><td>30</td><td>プラットフォーム本部 データエンジニア (シニア, フルタイム)<span class="longcell">配属部署名: 株式会社マッシブリンクスデータプラットフォーム本部データエンジニアリングチームソリューション開発パートサポートグループ (在籍 ID MSL-D-2024-0117)</span></td><td class="num">12 M/M</td><td class="num">650,000</td><td class="num">7,800,000</td></tr>
+    <tr><td>31</td><td>AI・ML本部 ML Platform Eng. ×2 (シニア)</td><td class="num">24 M/M</td><td class="num">680,000</td><td class="num">16,320,000</td></tr>
+    <tr><td>32</td><td>SRE 採用 (1名, 12ヶ月)</td><td class="num">12 M/M</td><td class="num">630,000</td><td class="num">7,560,000</td></tr>
+    <tr><td>33</td><td>QA Eng. 外注 (3名, 6ヶ月)</td><td class="num">18 M/M</td><td class="num">420,000</td><td class="num">7,560,000</td></tr>
+    <tr><td>34</td><td>UX デザイナー外注 (2名, 4ヶ月)</td><td class="num">8 M/M</td><td class="num">550,000</td><td class="num">4,400,000</td></tr>
+    <tr><td>35</td><td>外部セキュリティコンサル (半期)</td><td class="num">2式</td><td class="num">2,200,000</td><td class="num">4,400,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[7] その他運営費</td></tr>
+    <tr><td>36</td><td>出張費 (国内24回, 海外4回)</td><td class="num">28回</td><td class="num">125,000</td><td class="num">3,500,000</td></tr>
+    <tr><td>37</td><td>全社教育・カンファレンス登録</td><td class="num">1式</td><td class="num">1,800,000</td><td class="num">1,800,000</td></tr>
+    <tr><td>38</td><td>書籍・資料購入</td><td class="num">1式</td><td class="num">360,000</td><td class="num">360,000</td></tr>
+    <tr><td>39</td><td>法律顧問 (月額定額)</td><td class="num">12ヶ月</td><td class="num">250,000</td><td class="num">3,000,000</td></tr>
+    <tr><td>40</td><td>会計・税務顧問 (月額定額)</td><td class="num">12ヶ月</td><td class="num">180,000</td><td class="num">2,160,000</td></tr>
+    <tr><td>41</td><td>オフィス賃借料 (四半期精算)</td><td class="num">4四半期</td><td class="num">2,800,000</td><td class="num">11,200,000</td></tr>
+    <tr><td>42</td><td>各種ユーティリティ (電気/通信)</td><td class="num">12ヶ月</td><td class="num">220,000</td><td class="num">2,640,000</td></tr>
+    <tr><td>43</td><td>慶弔・福利厚生</td><td class="num">1式</td><td class="num">1,440,000</td><td class="num">1,440,000</td></tr>
+    <tr><td>44</td><td>マーケティング・PR外注</td><td class="num">1式</td><td class="num">2,400,000</td><td class="num">2,400,000</td></tr>
+    <tr><td>45</td><td>イベント・ワークショップ (半期)</td><td class="num">2回</td><td class="num">850,000</td><td class="num">1,700,000</td></tr>
+    <tr><td>46</td><td>機材 (ノートPC・モニタ) 新規導入</td><td class="num">15台</td><td class="num">280,000</td><td class="num">4,200,000</td></tr>
+    <tr><td>47</td><td>ネットワーク機器 (スイッチ/AP)</td><td class="num">1式</td><td class="num">840,000</td><td class="num">840,000</td></tr>
+    <tr><td>48</td><td>予備費・偶発費用</td><td class="num">1式</td><td class="num">1,200,000</td><td class="num">1,200,000</td></tr>
+    <tr><td>49</td><td>前年度精算残高 (繰越)</td><td class="num">1式</td><td class="num">-360,000</td><td class="num">-360,000</td></tr>
+    <tr><td>50</td><td>その他 (四半期残)</td><td class="num">4式</td><td class="num">120,000</td><td class="num">480,000</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><td colspan="5">小計 (税抜) ¥ 116,721,200</td></tr>
+  </tfoot>
+</table>
+
+<!-- F. サイン / QR / 合計 -->
+<div class="signatures">
+  <div class="sig-box">
+    <h3>発注確認 (乙)</h3>
+    <div class="line">
+      <svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 30 Q15 5 25 25 T50 22 Q60 8 70 28 T100 24" stroke="#1a1a1a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M50 32 L70 32" stroke="#1a1a1a" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="name"><strong>キム・ヒョヌ</strong>マッシブリンクス株式会社・CFO</div>
+  </div>
+  <div class="sig-box">
+    <h3>受注確認 (甲)</h3>
+    <div class="line">
+      <svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 28 Q18 8 28 26 Q40 14 52 26 Q64 12 76 26 Q88 16 100 28" stroke="#1a1a1a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="name"><strong>パク・ジヨン</strong>発注元・財務マネージャー</div>
+  </div>
+  <div class="qr-box">
+    <!-- F. ダミーQR (12x12 グリッド) -->
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+      <rect width="24" height="24" fill="#fff"/>
+      <g fill="#1a1a1a">
+        <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
+        <rect x="17" y="0" width="7" height="7"/><rect x="18" y="1" width="5" height="5" fill="#fff"/><rect x="19" y="2" width="3" height="3"/>
+        <rect x="0" y="17" width="7" height="7"/><rect x="1" y="18" width="5" height="5" fill="#fff"/><rect x="2" y="19" width="3" height="3"/>
+        <rect x="9" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="13" y="0" width="1" height="1"/>
+        <rect x="8" y="2" width="1" height="1"/><rect x="10" y="2" width="2" height="1"/><rect x="14" y="2" width="2" height="1"/>
+        <rect x="9" y="4" width="1" height="1"/><rect x="12" y="4" width="1" height="2"/><rect x="15" y="4" width="1" height="1"/>
+        <rect x="8" y="6" width="2" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="13" y="6" width="2" height="1"/>
+        <rect x="0" y="9" width="1" height="2"/><rect x="2" y="8" width="1" height="1"/><rect x="4" y="9" width="2" height="1"/>
+        <rect x="9" y="8" width="2" height="2"/><rect x="12" y="9" width="1" height="1"/><rect x="14" y="8" width="1" height="2"/>
+        <rect x="17" y="9" width="1" height="1"/><rect x="19" y="8" width="2" height="1"/><rect x="22" y="9" width="1" height="2"/>
+        <rect x="1" y="12" width="1" height="1"/><rect x="3" y="11" width="2" height="2"/><rect x="6" y="12" width="1" height="1"/>
+        <rect x="8" y="11" width="1" height="2"/><rect x="11" y="12" width="2" height="1"/><rect x="14" y="11" width="1" height="2"/>
+        <rect x="16" y="12" width="2" height="1"/><rect x="19" y="11" width="1" height="2"/><rect x="22" y="12" width="1" height="1"/>
+        <rect x="0" y="14" width="2" height="1"/><rect x="3" y="14" width="1" height="2"/><rect x="5" y="15" width="2" height="1"/>
+        <rect x="9" y="14" width="2" height="2"/><rect x="13" y="14" width="1" height="2"/><rect x="15" y="14" width="2" height="1"/>
+        <rect x="18" y="14" width="2" height="1"/><rect x="21" y="14" width="2" height="2"/>
+        <rect x="9" y="17" width="1" height="1"/><rect x="11" y="17" width="1" height="2"/><rect x="13" y="17" width="2" height="1"/>
+        <rect x="16" y="17" width="1" height="1"/><rect x="18" y="18" width="2" height="1"/><rect x="21" y="17" width="1" height="2"/>
+        <rect x="9" y="20" width="2" height="1"/><rect x="12" y="20" width="1" height="2"/><rect x="14" y="21" width="1" height="1"/>
+        <rect x="16" y="20" width="2" height="1"/><rect x="19" y="20" width="1" height="2"/><rect x="22" y="21" width="1" height="1"/>
+        <rect x="9" y="22" width="1" height="1"/><rect x="11" y="23" width="2" height="1"/><rect x="14" y="22" width="2" height="1"/>
+        <rect x="17" y="22" width="1" height="1"/><rect x="20" y="22" width="1" height="1"/><rect x="23" y="22" width="1" height="1"/>
+      </g>
+    </svg>
+    <div class="label">決済リンク</div>
+  </div>
+</div>
+
+<div class="grand">
+  <table>
+    <tr><td>税抜合計</td><td class="num">116,721,200</td></tr>
+    <tr><td>消費税 (10%)</td><td class="num">11,672,120</td></tr>
+    <tr class="total"><td>請求金額</td><td class="num">¥ 128,393,320</td></tr>
+  </table>
+</div>
+
+</body>
+</html>

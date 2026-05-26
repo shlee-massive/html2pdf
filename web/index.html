@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>HTML → PDF 변환 데모</title>
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --panel: #ffffff;
+    --border: #e3e3e8;
+    --text: #1a1a1a;
+    --muted: #6b6b73;
+    --accent: #1a1a1a;
+    --accent-fg: #ffffff;
+    --gotenberg: #2563eb;
+    --weasyprint: #16a34a;
+    --docraptor: #db2777;
+    --error: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Noto Sans JP", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: var(--accent);
+    color: var(--accent-fg);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; letter-spacing: 0.02em; }
+  header .sub { color: #c8c8d0; font-size: 12px; }
+  header .spacer { flex: 1; }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .controls label { color: #c8c8d0; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .controls select {
+    background: #2a2a32;
+    color: #fff;
+    border: 1px solid #3a3a44;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .controls button {
+    background: #fff;
+    color: var(--accent);
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .controls button:hover { background: #e8e8ec; }
+
+  .sample-bar {
+    background: #efeff3;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .sample-bar-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .sample-btn {
+    background: #fff;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .sample-btn:hover { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .sample-btn.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .sample-bar-hint { font-size: 11px; color: var(--muted); margin-left: auto; }
+
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    min-height: 0;
+  }
+
+  .pane {
+    background: var(--panel);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .pane header {
+    background: #fafafc;
+    color: var(--text);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pane header h2 {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .pane header .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--border);
+    color: var(--muted);
+  }
+  .pane header .spacer { flex: 1; }
+
+  .pane-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0;
+  }
+
+  textarea#data {
+    flex: 1;
+    border: none;
+    padding: 12px 14px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    background: #fafafc;
+  }
+
+  iframe {
+    flex: 1;
+    border: none;
+    background: #f0f0f3;
+    width: 100%;
+  }
+
+  .toolbar {
+    border-top: 1px solid var(--border);
+    padding: 8px 12px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    background: #fafafc;
+    flex-wrap: wrap;
+  }
+  .toolbar .label { font-size: 11px; color: var(--muted); margin-right: 4px; }
+
+  button.action {
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #fff;
+    transition: opacity 0.15s;
+  }
+  button.action:hover { opacity: 0.88; }
+  button.action:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.action.gotenberg { background: var(--gotenberg); }
+  button.action.weasyprint { background: var(--weasyprint); }
+  button.action.docraptor { background: var(--docraptor); }
+  button.action.dark { background: var(--accent); }
+
+  .status {
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    background: #fafafc;
+    min-height: 28px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  .status.ok { color: #15803d; }
+  .status.err { color: var(--error); }
+
+  .empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 24px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>HTML → PDF 변환 비교 데모</h1>
+  <span class="sub">Gotenberg · WeasyPrint · DocRaptor</span>
+  <span class="spacer"></span>
+  <div class="controls">
+    <label>로케일
+      <select id="locale">
+        <option value="ko">ko (한국어 ₩)</option>
+        <option value="ja">ja (日本語 ¥)</option>
+        <option value="en">en (English $)</option>
+      </select>
+    </label>
+    <button id="loadBtn">샘플 로드</button>
+  </div>
+</header>
+
+<div class="sample-bar">
+  <span class="sample-bar-label">Nested 표 예시</span>
+  <button class="sample-btn" data-sample="nested-basic">① 카테고리별 (1단)</button>
+  <button class="sample-btn" data-sample="nested-projects">② 프로젝트 분할 (다중 nested)</button>
+  <button class="sample-btn" data-sample="nested-deep">③ 3단 중첩 + 페이지 분할</button>
+  <button class="sample-btn" data-sample="nested-split">④ 행 잘림 테스트</button>
+  <button class="sample-btn" data-sample="nested-stress">⑤ 종합 스트레스 (A+B+C+D+E+F)</button>
+  <span class="sample-bar-hint">버튼을 누르면 미리보기에 주입되고, 우측의 PDF 변환 버튼으로 백엔드별 결과를 비교할 수 있습니다.</span>
+</div>
+
+<main>
+  <!-- 1. JSON 편집 -->
+  <section class="pane">
+    <header>
+      <h2>① 데이터</h2>
+      <span class="spacer"></span>
+      <span class="badge">JSON</span>
+    </header>
+    <div class="pane-body">
+      <textarea id="data" spellcheck="false" placeholder='우측 상단의 "샘플 로드" 버튼을 누르세요'></textarea>
+      <div class="toolbar">
+        <button class="action dark" id="renderBtn">→ HTML 렌더링</button>
+        <span class="status" id="renderStatus" style="border:none; background:transparent; padding:0 0 0 8px;"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. HTML 미리보기 -->
+  <section class="pane">
+    <header>
+      <h2>② HTML 미리보기</h2>
+      <span class="spacer"></span>
+      <span class="badge" id="htmlBadge">—</span>
+    </header>
+    <div class="pane-body">
+      <iframe id="preview" title="HTML 미리보기"></iframe>
+      <div class="toolbar">
+        <span class="label">PDF 변환:</span>
+        <button class="action gotenberg" data-backend="gotenberg">Gotenberg</button>
+        <button class="action weasyprint" data-backend="weasyprint">WeasyPrint</button>
+        <button class="action docraptor" data-backend="docraptor">DocRaptor</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. PDF 결과 -->
+  <section class="pane">
+    <header>
+      <h2>③ PDF 결과</h2>
+      <span class="spacer"></span>
+      <span class="badge" id="pdfBadge">—</span>
+    </header>
+    <div class="pane-body">
+      <iframe id="pdf" title="PDF 결과"></iframe>
+      <div class="status" id="pdfStatus">아직 변환된 PDF가 없습니다.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const localeSel = $('#locale');
+  const dataEl = $('#data');
+  const previewEl = $('#preview');
+  const pdfEl = $('#pdf');
+  const renderStatus = $('#renderStatus');
+  const pdfStatus = $('#pdfStatus');
+  const htmlBadge = $('#htmlBadge');
+  const pdfBadge = $('#pdfBadge');
+
+  let currentHTML = '';
+  let currentPdfURL = '';
+
+  function setStatus(el, msg, kind) {
+    el.textContent = msg || '';
+    el.className = 'status' + (kind ? ' ' + kind : '');
+  }
+
+  async function loadSample() {
+    currentSampleName = null;
+    document.querySelectorAll('.sample-btn').forEach(b => b.classList.remove('active'));
+    const loc = localeSel.value;
+    setStatus(renderStatus, '샘플 로드 중...');
+    try {
+      const r = await fetch(`/api/sample?locale=${loc}`);
+      if (!r.ok) throw new Error(await r.text());
+      const json = await r.json();
+      dataEl.value = JSON.stringify(json, null, 2);
+      setStatus(renderStatus, `샘플 로드: ${loc}.json`, 'ok');
+      await renderHTML();
+    } catch (e) {
+      setStatus(renderStatus, '로드 실패: ' + e.message, 'err');
+    }
+  }
+
+  async function renderHTML() {
+    setStatus(renderStatus, 'HTML 렌더링 중...');
+    try {
+      const body = dataEl.value;
+      // 빠른 JSON 검증
+      JSON.parse(body);
+      const r = await fetch('/api/render', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+      });
+      if (!r.ok) throw new Error(await r.text());
+      currentHTML = await r.text();
+      previewEl.srcdoc = currentHTML;
+      htmlBadge.textContent = `${(currentHTML.length / 1024).toFixed(1)} KB`;
+      setStatus(renderStatus, `렌더링 완료 (${currentHTML.length.toLocaleString()} bytes)`, 'ok');
+    } catch (e) {
+      setStatus(renderStatus, '렌더링 실패: ' + e.message, 'err');
+    }
+  }
+
+  async function convert(backend) {
+    if (!currentHTML) {
+      setStatus(pdfStatus, '먼저 HTML 을 렌더링하세요.', 'err');
+      return;
+    }
+    pdfBadge.textContent = backend;
+    pdfBadge.style.background = getComputedStyle(document.documentElement).getPropertyValue('--' + backend);
+    pdfBadge.style.color = '#fff';
+    setStatus(pdfStatus, `${backend} 변환 중...`);
+    const t0 = performance.now();
+    try {
+      const r = await fetch(`/api/convert?backend=${backend}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        body: currentHTML,
+      });
+      if (!r.ok) throw new Error(await r.text());
+      const blob = await r.blob();
+      if (currentPdfURL) URL.revokeObjectURL(currentPdfURL);
+      currentPdfURL = URL.createObjectURL(blob);
+      pdfEl.src = currentPdfURL;
+      const elapsed = (performance.now() - t0).toFixed(0);
+      const kb = (blob.size / 1024).toFixed(1);
+      setStatus(pdfStatus, `${backend} → ${kb} KB · ${elapsed} ms`, 'ok');
+    } catch (e) {
+      setStatus(pdfStatus, `${backend} 실패: ${e.message}`, 'err');
+    }
+  }
+
+  let currentSampleName = null;
+
+  function resolveSampleFilename(name) {
+    const loc = localeSel.value;
+    // ko는 무접미사(원본), ja/en은 -ja/-en 접미사
+    return loc === 'ko' ? `${name}.html` : `${name}-${loc}.html`;
+  }
+
+  async function loadStaticSample(name) {
+    currentSampleName = name;
+    const file = resolveSampleFilename(name);
+    setStatus(renderStatus, `${file} 로드 중...`);
+    try {
+      const r = await fetch(`/${file}`);
+      if (!r.ok) throw new Error(await r.text());
+      currentHTML = await r.text();
+      previewEl.srcdoc = currentHTML;
+      htmlBadge.textContent = `${(currentHTML.length / 1024).toFixed(1)} KB`;
+      dataEl.value = `// 정적 샘플: ${file}\n// JSON 렌더링 흐름과 분리된 nested table 데모입니다.\n// 헤더의 로케일(ko/ja/en)을 바꾸면 같은 버튼이 해당 언어 버전을 로드합니다.\n// 다시 JSON 흐름으로 돌아가려면 우측 상단의 "샘플 로드" 를 누르세요.`;
+      setStatus(renderStatus, `샘플 로드: ${file} (${currentHTML.length.toLocaleString()} bytes)`, 'ok');
+      document.querySelectorAll('.sample-btn').forEach(b => b.classList.toggle('active', b.dataset.sample === name));
+    } catch (e) {
+      setStatus(renderStatus, '샘플 로드 실패: ' + e.message, 'err');
+    }
+  }
+
+  $('#loadBtn').addEventListener('click', loadSample);
+  $('#renderBtn').addEventListener('click', renderHTML);
+  localeSel.addEventListener('change', () => {
+    // 정적 nested 샘플이 활성 상태면 그걸 해당 언어로 다시 로드, 아니면 JSON 흐름으로
+    if (currentSampleName) {
+      loadStaticSample(currentSampleName);
+    } else {
+      loadSample();
+    }
+  });
+  document.querySelectorAll('[data-backend]').forEach(btn => {
+    btn.addEventListener('click', () => convert(btn.dataset.backend));
+  });
+  document.querySelectorAll('.sample-btn').forEach(btn => {
+    btn.addEventListener('click', () => loadStaticSample(btn.dataset.sample));
+  });
+
+  // 첫 로드
+  loadSample();
+})();
+</script>
+</body>
+</html>

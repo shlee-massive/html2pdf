@@ -1,0 +1,48 @@
+{
+  "locale": "ko",
+  "currency": "KRW",
+  "invoice_number": "INV-2026-KR-00421",
+  "issue_date": "2026년 5월 22일",
+  "due_date": "2026년 6월 21일",
+  "tax_rate": 10,
+  "from": {
+    "name": "주식회사 매시브링크스",
+    "address": "서울특별시 강남구 테헤란로 152, 강남파이낸스센터 17층",
+    "tax_id": "123-45-67890",
+    "contact": "경리팀 / +82-2-1234-5678"
+  },
+  "to": {
+    "name": "한빛전자 주식회사",
+    "address": "경기도 성남시 분당구 판교역로 235, 판교디지털센터 9층",
+    "tax_id": "987-65-43210",
+    "contact": "구매팀 김지훈 차장"
+  },
+  "items": [
+    {"description": "기업용 클라우드 스토리지 (연간 라이선스)", "sku": "CLD-STD-Y", "quantity": 12, "unit_price": 180000, "amount": 2160000},
+    {"description": "통합 인증 (SSO) 부가 모듈", "sku": "SSO-ADD", "quantity": 12, "unit_price": 50000, "amount": 600000},
+    {"description": "감사 로그 90일 보관 옵션", "sku": "AUD-90", "quantity": 12, "unit_price": 80000, "amount": 960000},
+    {"description": "API 사용료 (월 100만 콜)", "sku": "API-1M", "quantity": 12, "unit_price": 120000, "amount": 1440000},
+    {"description": "전담 기술지원 (업무시간 내)", "sku": "SUP-BIZ", "quantity": 12, "unit_price": 250000, "amount": 3000000},
+    {"description": "현장 기술지원 (1일)", "sku": "ONS-1D", "quantity": 4, "unit_price": 1200000, "amount": 4800000},
+    {"description": "연간 보안 감사 리포트", "sku": "SEC-AUDIT", "quantity": 1, "unit_price": 3500000, "amount": 3500000},
+    {"description": "맞춤형 리포트 템플릿 개발", "sku": "RPT-DEV", "quantity": 3, "unit_price": 800000, "amount": 2400000},
+    {"description": "초기 데이터 이관 서비스", "sku": "MIG-INIT", "quantity": 1, "unit_price": 4500000, "amount": 4500000},
+    {"description": "운영 환경 구축·초기 설정", "sku": "ENV-SETUP", "quantity": 1, "unit_price": 2800000, "amount": 2800000},
+    {"description": "스테이징 환경 구축", "sku": "ENV-STG", "quantity": 1, "unit_price": 1500000, "amount": 1500000},
+    {"description": "관리자 교육 (반일 과정)", "sku": "TRN-HALF", "quantity": 2, "unit_price": 600000, "amount": 1200000},
+    {"description": "사용자용 매뉴얼 작성 (한국어)", "sku": "DOC-KO", "quantity": 1, "unit_price": 900000, "amount": 900000},
+    {"description": "헬프센터 번역 (영→한)", "sku": "TRN-EN-KO", "quantity": 1, "unit_price": 2200000, "amount": 2200000},
+    {"description": "월간 리뷰 미팅 (1시간 × 12회)", "sku": "MTG-MON", "quantity": 12, "unit_price": 150000, "amount": 1800000},
+    {"description": "재해 복구(DR) 리허설", "sku": "DR-DRILL", "quantity": 2, "unit_price": 1800000, "amount": 3600000},
+    {"description": "고속 전송 옵션 (월 1TB)", "sku": "XFR-1TB", "quantity": 12, "unit_price": 70000, "amount": 840000},
+    {"description": "IP 제한·거점별 접근 제어", "sku": "ACL-IP", "quantity": 12, "unit_price": 40000, "amount": 480000},
+    {"description": "세금계산서 PDF 커스터마이징", "sku": "INV-TAX", "quantity": 1, "unit_price": 1800000, "amount": 1800000},
+    {"description": "전자세금계산서 e세로 연동 컨설팅", "sku": "ESERO-CON", "quantity": 1, "unit_price": 3200000, "amount": 3200000},
+    {"description": "PDF/A-2b 출력 라이선스", "sku": "PDFA-LIC", "quantity": 1, "unit_price": 950000, "amount": 950000},
+    {"description": "예비 시간 (기술지원 풀)", "sku": "RES-POOL", "quantity": 20, "unit_price": 120000, "amount": 2400000},
+    {"description": "긴급 대응 (24/365 옵션)", "sku": "EMG-247", "quantity": 12, "unit_price": 350000, "amount": 4200000},
+    {"description": "계약 관리·갱신 지원", "sku": "CTR-MGR", "quantity": 1, "unit_price": 500000, "amount": 500000},
+    {"description": "프로젝트 관리 (PM)", "sku": "PM-FEE", "quantity": 1, "unit_price": 2500000, "amount": 2500000}
+  ],
+  "notes": "■ 입금 계좌: 우리은행 1002-123-456789 (주)매시브링크스\n■ 송금 수수료는 송금인 부담입니다.\n■ 문의는 경리팀(accounting@example.co.kr) 으로 연락 부탁드립니다."
+}

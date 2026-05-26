@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>請求書 — 3段ネスト + ページ分割</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  body {
+    font-family: "Noto Sans JP", "Noto Sans CJK JP", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 10.5px;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .meta { color: #6b6b73; font-size: 11px; margin-bottom: 18px; }
+  .meta strong { color: #1a1a1a; }
+  .note {
+    background: #fff8e6;
+    border-left: 3px solid #f59e0b;
+    padding: 6px 10px;
+    font-size: 10.5px;
+    color: #78350f;
+    margin-bottom: 14px;
+  }
+
+  table { border-collapse: collapse; }
+
+  /* L1: 部門 */
+  table.l1 {
+    width: 100%;
+    table-layout: fixed;
+    border: 1px solid #1a1a1a;
+  }
+  table.l1 > thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.l1 > tbody > tr > td {
+    border-top: 1px solid #d8d8de;
+    padding: 12px 10px;
+    vertical-align: top;
+  }
+  .dept-header {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+  }
+  .dept-header .code { font-family: "SF Mono", Menlo, monospace; color: #6b6b73; font-size: 10.5px; }
+
+  /* L2: プロジェクト */
+  table.l2 {
+    width: 100%;
+    table-layout: fixed;
+    margin-bottom: 10px;
+    border: 1px solid #d8d8de;
+  }
+  table.l2 > thead th {
+    background: #fafafc;
+    color: #1a1a1a;
+    padding: 6px 8px;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 600;
+    border-bottom: 1px solid #d8d8de;
+  }
+  table.l2 > tbody > tr > td {
+    border-top: 1px solid #ececf0;
+    padding: 8px;
+    vertical-align: top;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .proj-label {
+    width: 30%;
+    font-weight: 600;
+  }
+  .proj-label .meta-line {
+    display: block;
+    font-weight: 400;
+    color: #6b6b73;
+    font-size: 9.5px;
+    margin-top: 2px;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+
+  /* L3: 項目 */
+  table.l3 { width: 100%; font-size: 9.5px; }
+  table.l3 th, table.l3 td {
+    border-bottom: 1px solid #ececf0;
+    padding: 3px 6px;
+    text-align: left;
+  }
+  table.l3 th {
+    background: #fafafc;
+    font-weight: 600;
+    color: #6b6b73;
+    font-size: 9px;
+  }
+  table.l3 td.num, table.l3 th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.l3 tr.sub td {
+    background: #fafafc;
+    font-weight: 600;
+    border-bottom: none;
+    text-align: right;
+  }
+
+  .dept-total {
+    margin-top: 6px;
+    text-align: right;
+    font-size: 11.5px;
+    border-top: 1px solid #1a1a1a;
+    padding-top: 6px;
+  }
+  .dept-total strong { font-size: 13.5px; margin-left: 8px; font-variant-numeric: tabular-nums; }
+
+  .grand {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .grand table { width: 320px; }
+  .grand td { padding: 6px 10px; font-size: 11.5px; }
+  .grand td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .grand tr.total td {
+    font-weight: 700;
+    font-size: 15px;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <h1>請求書 — 部門 / プロジェクト / 項目 (3段ネスト)</h1>
+  <div class="meta">
+    <strong>INV-2026-0420</strong> · 発行日 2026-05-26 · 請求先: マッシブリンクス株式会社 · 支払期限: 2026-06-30
+  </div>
+  <div class="note">
+    ページ分割テスト用 — 部門ごとの表がページをまたぎ、内側のプロジェクト行は <code>page-break-inside: avoid</code> でまとめられている必要があります。
+  </div>
+
+  <table class="l1">
+    <thead>
+      <tr><th>部門別 / プロジェクト別 / 項目別 明細</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="dept-header">
+            <span>プラットフォーム本部</span>
+            <span class="code">DEPT-PLT</span>
+          </div>
+
+          <table class="l2">
+            <thead>
+              <tr><th style="width:30%">プロジェクト</th><th>項目明細</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="proj-label">データプラットフォーム v3<span class="meta-line">PRJ-PLT-001 · 2026-Q2</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>項目</th><th class="num" style="width:60px">数量</th><th class="num" style="width:80px">単価</th><th class="num" style="width:100px">金額</th></tr></thead>
+                    <tbody>
+                      <tr><td>Snowflake クレジット (Enterprise)</td><td class="num">8,000</td><td class="num">290</td><td class="num">2,320,000</td></tr>
+                      <tr><td>dbt Cloud Team (1年)</td><td class="num">1</td><td class="num">720,000</td><td class="num">720,000</td></tr>
+                      <tr><td>Data Engineer (M/M)</td><td class="num">8</td><td class="num">550,000</td><td class="num">4,400,000</td></tr>
+                      <tr class="sub"><td colspan="3">小計</td><td class="num">7,440,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">リアルタイムイベントバス<span class="meta-line">PRJ-PLT-002 · 2026-Q2~Q3</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>項目</th><th class="num" style="width:60px">数量</th><th class="num" style="width:80px">単価</th><th class="num" style="width:100px">金額</th></tr></thead>
+                    <tbody>
+                      <tr><td>Confluent Cloud (Standard)</td><td class="num">6 ヶ月</td><td class="num">380,000</td><td class="num">2,280,000</td></tr>
+                      <tr><td>スキーマレジストリ運用費</td><td class="num">6 ヶ月</td><td class="num">80,000</td><td class="num">480,000</td></tr>
+                      <tr><td>Backend Eng. (M/M)</td><td class="num">10</td><td class="num">580,000</td><td class="num">5,800,000</td></tr>
+                      <tr><td>モニタリング (Datadog APM)</td><td class="num">1 年</td><td class="num">920,000</td><td class="num">920,000</td></tr>
+                      <tr class="sub"><td colspan="3">小計</td><td class="num">9,480,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="dept-total">プラットフォーム本部 合計 <strong>¥ 16,920,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="dept-header">
+            <span>AI・ML本部</span>
+            <span class="code">DEPT-AI</span>
+          </div>
+
+          <table class="l2">
+            <thead>
+              <tr><th style="width:30%">プロジェクト</th><th>項目明細</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="proj-label">LLM推論インフラ<span class="meta-line">PRJ-AI-101 · 2026-Q2~Q4</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>項目</th><th class="num" style="width:60px">数量</th><th class="num" style="width:80px">単価</th><th class="num" style="width:100px">金額</th></tr></thead>
+                    <tbody>
+                      <tr><td>A100 80GB インスタンス (月)</td><td class="num">8 ヶ月</td><td class="num">980,000</td><td class="num">7,840,000</td></tr>
+                      <tr><td>vLLM 運用コンサルティング</td><td class="num">2 回</td><td class="num">650,000</td><td class="num">1,300,000</td></tr>
+                      <tr><td>MLOps Eng. (M/M)</td><td class="num">8</td><td class="num">650,000</td><td class="num">5,200,000</td></tr>
+                      <tr><td>ベクター DB (運用)</td><td class="num">1 年</td><td class="num">1,440,000</td><td class="num">1,440,000</td></tr>
+                      <tr class="sub"><td colspan="3">小計</td><td class="num">15,780,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">モデル評価パイプライン<span class="meta-line">PRJ-AI-102 · 2026-Q3</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>項目</th><th class="num" style="width:60px">数量</th><th class="num" style="width:80px">単価</th><th class="num" style="width:100px">金額</th></tr></thead>
+                    <tbody>
+                      <tr><td>評価データセットライセンス</td><td class="num">3</td><td class="num">420,000</td><td class="num">1,260,000</td></tr>
+                      <tr><td>アノテーション外注 (アノテーター時)</td><td class="num">800</td><td class="num">2,200</td><td class="num">1,760,000</td></tr>
+                      <tr><td>ML Eng. (M/M)</td><td class="num">4</td><td class="num">620,000</td><td class="num">2,480,000</td></tr>
+                      <tr class="sub"><td colspan="3">小計</td><td class="num">5,500,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">RAG検索品質改善<span class="meta-line">PRJ-AI-103 · 2026-Q3~Q4</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>項目</th><th class="num" style="width:60px">数量</th><th class="num" style="width:80px">単価</th><th class="num" style="width:100px">金額</th></tr></thead>
+                    <tbody>
+                      <tr><td>埋め込みモデル ファインチューニング (外部)</td><td class="num">1 式</td><td class="num">2,800,000</td><td class="num">2,800,000</td></tr>
+                      <tr><td>リランカーモデル ライセンス</td><td class="num">1 年</td><td class="num">960,000</td><td class="num">960,000</td></tr>
+                      <tr><td>Backend Eng. (M/M)</td><td class="num">6</td><td class="num">580,000</td><td class="num">3,480,000</td></tr>
+                      <tr class="sub"><td colspan="3">小計</td><td class="num">7,240,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="dept-total">AI・ML本部 合計 <strong>¥ 28,520,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="dept-header">
+            <span>セキュリティ・コンプライアンス本部</span>
+            <span class="code">DEPT-SEC</span>
+          </div>
+
+          <table class="l2">
+            <thead>
+              <tr><th style="width:30%">プロジェクト</th><th>項目明細</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="proj-label">ISMS-P認証更新<span class="meta-line">PRJ-SEC-201 · 2026-Q3</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>項目</th><th class="num" style="width:60px">数量</th><th class="num" style="width:80px">単価</th><th class="num" style="width:100px">金額</th></tr></thead>
+                    <tbody>
+                      <tr><td>認証機関 審査料</td><td class="num">1 回</td><td class="num">1,450,000</td><td class="num">1,450,000</td></tr>
+                      <tr><td>事前コンサルティング (外部)</td><td class="num">3 ヶ月</td><td class="num">680,000</td><td class="num">2,040,000</td></tr>
+                      <tr><td>セキュリティ PM (M/M)</td><td class="num">3</td><td class="num">700,000</td><td class="num">2,100,000</td></tr>
+                      <tr class="sub"><td colspan="3">小計</td><td class="num">5,590,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">ゼロトラスト導入<span class="meta-line">PRJ-SEC-202 · 2026-Q3~Q4</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>項目</th><th class="num" style="width:60px">数量</th><th class="num" style="width:80px">単価</th><th class="num" style="width:100px">金額</th></tr></thead>
+                    <tbody>
+                      <tr><td>ZTNA ソリューションライセンス</td><td class="num">300 人・年</td><td class="num">18,000</td><td class="num">5,400,000</td></tr>
+                      <tr><td>IdP 統合コンサルティング</td><td class="num">1 式</td><td class="num">1,800,000</td><td class="num">1,800,000</td></tr>
+                      <tr><td>セキュリティ Eng. (M/M)</td><td class="num">5</td><td class="num">650,000</td><td class="num">3,250,000</td></tr>
+                      <tr class="sub"><td colspan="3">小計</td><td class="num">10,450,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="dept-total">セキュリティ・コンプライアンス本部 合計 <strong>¥ 16,040,000</strong></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grand">
+    <table>
+      <tr><td>税抜合計</td><td class="num">61,480,000</td></tr>
+      <tr><td>消費税 (10%)</td><td class="num">6,148,000</td></tr>
+      <tr class="total"><td>請求金額</td><td class="num">¥ 67,628,000</td></tr>
+    </table>
+  </div>
+</body>
+</html>

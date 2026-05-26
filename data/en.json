@@ -1,0 +1,48 @@
+{
+  "locale": "en",
+  "currency": "USD",
+  "invoice_number": "INV-2026-US-00421",
+  "issue_date": "May 22, 2026",
+  "due_date": "June 21, 2026",
+  "tax_rate": 8.875,
+  "from": {
+    "name": "Massivelinks, Inc.",
+    "address": "548 Market St #62128, San Francisco, CA 94104, USA",
+    "tax_id": "EIN 88-1234567",
+    "contact": "billing@massivelinks.example / +1 (415) 555-0182"
+  },
+  "to": {
+    "name": "Acme Robotics Corp.",
+    "address": "1200 Industrial Pkwy, Brooklyn, NY 11201, USA",
+    "tax_id": "EIN 47-9876543",
+    "contact": "Procurement / Jane O'Connor"
+  },
+  "items": [
+    {"description": "Enterprise Cloud Storage (annual license)", "sku": "CLD-STD-Y", "quantity": 12, "unit_price": 150.00, "amount": 1800.00},
+    {"description": "Single Sign-On (SSO) add-on", "sku": "SSO-ADD", "quantity": 12, "unit_price": 45.00, "amount": 540.00},
+    {"description": "Audit log 90-day retention", "sku": "AUD-90", "quantity": 12, "unit_price": 65.00, "amount": 780.00},
+    {"description": "API usage (1M calls / month)", "sku": "API-1M", "quantity": 12, "unit_price": 110.00, "amount": 1320.00},
+    {"description": "Dedicated technical support (business hours)", "sku": "SUP-BIZ", "quantity": 12, "unit_price": 220.00, "amount": 2640.00},
+    {"description": "On-site engineering assistance (per day)", "sku": "ONS-1D", "quantity": 4, "unit_price": 1100.00, "amount": 4400.00},
+    {"description": "Annual security audit report", "sku": "SEC-AUDIT", "quantity": 1, "unit_price": 3200.00, "amount": 3200.00},
+    {"description": "Custom report template development", "sku": "RPT-DEV", "quantity": 3, "unit_price": 750.00, "amount": 2250.00},
+    {"description": "Initial data migration service", "sku": "MIG-INIT", "quantity": 1, "unit_price": 4100.00, "amount": 4100.00},
+    {"description": "Production environment provisioning", "sku": "ENV-SETUP", "quantity": 1, "unit_price": 2500.00, "amount": 2500.00},
+    {"description": "Staging environment provisioning", "sku": "ENV-STG", "quantity": 1, "unit_price": 1350.00, "amount": 1350.00},
+    {"description": "Administrator training (half-day course)", "sku": "TRN-HALF", "quantity": 2, "unit_price": 550.00, "amount": 1100.00},
+    {"description": "End-user documentation (English)", "sku": "DOC-EN", "quantity": 1, "unit_price": 820.00, "amount": 820.00},
+    {"description": "Localization review (EN edit pass)", "sku": "L10N-EN", "quantity": 1, "unit_price": 1950.00, "amount": 1950.00},
+    {"description": "Monthly review meetings (1 hr × 12)", "sku": "MTG-MON", "quantity": 12, "unit_price": 130.00, "amount": 1560.00},
+    {"description": "Disaster Recovery (DR) rehearsal", "sku": "DR-DRILL", "quantity": 2, "unit_price": 1650.00, "amount": 3300.00},
+    {"description": "High-speed transfer add-on (1 TB / month)", "sku": "XFR-1TB", "quantity": 12, "unit_price": 60.00, "amount": 720.00},
+    {"description": "IP allowlist & site-based access control", "sku": "ACL-IP", "quantity": 12, "unit_price": 35.00, "amount": 420.00},
+    {"description": "Invoice PDF customization", "sku": "INV-CUS", "quantity": 1, "unit_price": 1600.00, "amount": 1600.00},
+    {"description": "SOC2 compliance consulting", "sku": "SOC2-CON", "quantity": 1, "unit_price": 2900.00, "amount": 2900.00},
+    {"description": "PDF/A-2b output license", "sku": "PDFA-LIC", "quantity": 1, "unit_price": 850.00, "amount": 850.00},
+    {"description": "Reserve hours (engineering pool)", "sku": "RES-POOL", "quantity": 20, "unit_price": 110.00, "amount": 2200.00},
+    {"description": "Emergency response (24/365 option)", "sku": "EMG-247", "quantity": 12, "unit_price": 310.00, "amount": 3720.00},
+    {"description": "Contract management & renewal support", "sku": "CTR-MGR", "quantity": 1, "unit_price": 450.00, "amount": 450.00},
+    {"description": "Project management (PM)", "sku": "PM-FEE", "quantity": 1, "unit_price": 2300.00, "amount": 2300.00}
+  ],
+  "notes": "Wire to: Silicon Valley Bank, ABA 121140399, Acct 33012345678, Massivelinks Inc.\nLate payments incur 1.5% interest per month.\nQuestions: billing@massivelinks.example"
+}

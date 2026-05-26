@@ -1,0 +1,5 @@
+output/*.pdf
+output/*.html
+bin/
+.DS_Store
+.claude/

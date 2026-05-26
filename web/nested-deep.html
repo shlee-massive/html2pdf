@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>청구서 — 3단 중첩 + 페이지 분할</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  body {
+    font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 10.5px;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .meta { color: #6b6b73; font-size: 11px; margin-bottom: 18px; }
+  .meta strong { color: #1a1a1a; }
+  .note {
+    background: #fff8e6;
+    border-left: 3px solid #f59e0b;
+    padding: 6px 10px;
+    font-size: 10.5px;
+    color: #78350f;
+    margin-bottom: 14px;
+  }
+
+  table { border-collapse: collapse; }
+
+  /* L1: 부서 */
+  table.l1 {
+    width: 100%;
+    table-layout: fixed;
+    border: 1px solid #1a1a1a;
+  }
+  table.l1 > thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.l1 > tbody > tr > td {
+    border-top: 1px solid #d8d8de;
+    padding: 12px 10px;
+    vertical-align: top;
+  }
+  .dept-header {
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+  }
+  .dept-header .code { font-family: "SF Mono", Menlo, monospace; color: #6b6b73; font-size: 10.5px; }
+
+  /* L2: 프로젝트 */
+  table.l2 {
+    width: 100%;
+    table-layout: fixed;
+    margin-bottom: 10px;
+    border: 1px solid #d8d8de;
+  }
+  table.l2 > thead th {
+    background: #fafafc;
+    color: #1a1a1a;
+    padding: 6px 8px;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 600;
+    border-bottom: 1px solid #d8d8de;
+  }
+  table.l2 > tbody > tr > td {
+    border-top: 1px solid #ececf0;
+    padding: 8px;
+    vertical-align: top;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .proj-label {
+    width: 30%;
+    font-weight: 600;
+  }
+  .proj-label .meta-line {
+    display: block;
+    font-weight: 400;
+    color: #6b6b73;
+    font-size: 9.5px;
+    margin-top: 2px;
+    font-family: "SF Mono", Menlo, monospace;
+  }
+
+  /* L3: 항목 */
+  table.l3 { width: 100%; font-size: 9.5px; }
+  table.l3 th, table.l3 td {
+    border-bottom: 1px solid #ececf0;
+    padding: 3px 6px;
+    text-align: left;
+  }
+  table.l3 th {
+    background: #fafafc;
+    font-weight: 600;
+    color: #6b6b73;
+    font-size: 9px;
+  }
+  table.l3 td.num, table.l3 th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.l3 tr.sub td {
+    background: #fafafc;
+    font-weight: 600;
+    border-bottom: none;
+    text-align: right;
+  }
+
+  .dept-total {
+    margin-top: 6px;
+    text-align: right;
+    font-size: 11.5px;
+    border-top: 1px solid #1a1a1a;
+    padding-top: 6px;
+  }
+  .dept-total strong { font-size: 13.5px; margin-left: 8px; font-variant-numeric: tabular-nums; }
+
+  .grand {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .grand table { width: 320px; }
+  .grand td { padding: 6px 10px; font-size: 11.5px; }
+  .grand td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .grand tr.total td {
+    font-weight: 700;
+    font-size: 15px;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <h1>청구서 — 부서 / 프로젝트 / 항목 (3단 중첩)</h1>
+  <div class="meta">
+    <strong>INV-2026-0420</strong> · 발행일 2026-05-26 · 청구처: (주)매시브링크스 · 결제기한: 2026-06-30
+  </div>
+  <div class="note">
+    페이지 분할 테스트용 — 부서별 표가 페이지를 넘어가며, 내부 프로젝트 행은 <code>page-break-inside: avoid</code> 로 묶여 있어야 합니다.
+  </div>
+
+  <table class="l1">
+    <thead>
+      <tr><th>부서별 / 프로젝트별 / 항목별 세부 내역</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="dept-header">
+            <span>플랫폼 본부</span>
+            <span class="code">DEPT-PLT</span>
+          </div>
+
+          <table class="l2">
+            <thead>
+              <tr><th style="width:30%">프로젝트</th><th>항목 내역</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="proj-label">데이터 플랫폼 v3<span class="meta-line">PRJ-PLT-001 · 2026-Q2</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>항목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:80px">단가</th><th class="num" style="width:100px">금액</th></tr></thead>
+                    <tbody>
+                      <tr><td>Snowflake 크레딧 (Enterprise)</td><td class="num">8,000</td><td class="num">2,900</td><td class="num">23,200,000</td></tr>
+                      <tr><td>dbt Cloud Team (1년)</td><td class="num">1</td><td class="num">7,200,000</td><td class="num">7,200,000</td></tr>
+                      <tr><td>Data Engineer (M/M)</td><td class="num">8</td><td class="num">5,500,000</td><td class="num">44,000,000</td></tr>
+                      <tr class="sub"><td colspan="3">소계</td><td class="num">74,400,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">실시간 이벤트 버스<span class="meta-line">PRJ-PLT-002 · 2026-Q2~Q3</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>항목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:80px">단가</th><th class="num" style="width:100px">금액</th></tr></thead>
+                    <tbody>
+                      <tr><td>Confluent Cloud (Standard)</td><td class="num">6 개월</td><td class="num">3,800,000</td><td class="num">22,800,000</td></tr>
+                      <tr><td>스키마 레지스트리 운영비</td><td class="num">6 개월</td><td class="num">800,000</td><td class="num">4,800,000</td></tr>
+                      <tr><td>Backend Eng. (M/M)</td><td class="num">10</td><td class="num">5,800,000</td><td class="num">58,000,000</td></tr>
+                      <tr><td>모니터링 (Datadog APM)</td><td class="num">1 년</td><td class="num">9,200,000</td><td class="num">9,200,000</td></tr>
+                      <tr class="sub"><td colspan="3">소계</td><td class="num">94,800,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="dept-total">플랫폼 본부 합계 <strong>₩ 169,200,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="dept-header">
+            <span>AI · ML 본부</span>
+            <span class="code">DEPT-AI</span>
+          </div>
+
+          <table class="l2">
+            <thead>
+              <tr><th style="width:30%">프로젝트</th><th>항목 내역</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="proj-label">LLM 추론 인프라<span class="meta-line">PRJ-AI-101 · 2026-Q2~Q4</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>항목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:80px">단가</th><th class="num" style="width:100px">금액</th></tr></thead>
+                    <tbody>
+                      <tr><td>A100 80GB 인스턴스 (월)</td><td class="num">8 개월</td><td class="num">9,800,000</td><td class="num">78,400,000</td></tr>
+                      <tr><td>vLLM 운영 컨설팅</td><td class="num">2 회</td><td class="num">6,500,000</td><td class="num">13,000,000</td></tr>
+                      <tr><td>MLOps Eng. (M/M)</td><td class="num">8</td><td class="num">6,500,000</td><td class="num">52,000,000</td></tr>
+                      <tr><td>벡터 DB (운영)</td><td class="num">1 년</td><td class="num">14,400,000</td><td class="num">14,400,000</td></tr>
+                      <tr class="sub"><td colspan="3">소계</td><td class="num">157,800,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">모델 평가 파이프라인<span class="meta-line">PRJ-AI-102 · 2026-Q3</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>항목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:80px">단가</th><th class="num" style="width:100px">금액</th></tr></thead>
+                    <tbody>
+                      <tr><td>평가 데이터셋 라이선스</td><td class="num">3</td><td class="num">4,200,000</td><td class="num">12,600,000</td></tr>
+                      <tr><td>Annotation 외주 (어노테이터-시간)</td><td class="num">800</td><td class="num">22,000</td><td class="num">17,600,000</td></tr>
+                      <tr><td>ML Eng. (M/M)</td><td class="num">4</td><td class="num">6,200,000</td><td class="num">24,800,000</td></tr>
+                      <tr class="sub"><td colspan="3">소계</td><td class="num">55,000,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">RAG 검색 품질 개선<span class="meta-line">PRJ-AI-103 · 2026-Q3~Q4</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>항목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:80px">단가</th><th class="num" style="width:100px">금액</th></tr></thead>
+                    <tbody>
+                      <tr><td>임베딩 모델 파인튜닝 (외부)</td><td class="num">1 식</td><td class="num">28,000,000</td><td class="num">28,000,000</td></tr>
+                      <tr><td>리랭커 모델 라이선스</td><td class="num">1 년</td><td class="num">9,600,000</td><td class="num">9,600,000</td></tr>
+                      <tr><td>Backend Eng. (M/M)</td><td class="num">6</td><td class="num">5,800,000</td><td class="num">34,800,000</td></tr>
+                      <tr class="sub"><td colspan="3">소계</td><td class="num">72,400,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="dept-total">AI · ML 본부 합계 <strong>₩ 285,200,000</strong></div>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <div class="dept-header">
+            <span>보안 · 컴플라이언스 본부</span>
+            <span class="code">DEPT-SEC</span>
+          </div>
+
+          <table class="l2">
+            <thead>
+              <tr><th style="width:30%">프로젝트</th><th>항목 내역</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="proj-label">ISMS-P 인증 갱신<span class="meta-line">PRJ-SEC-201 · 2026-Q3</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>항목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:80px">단가</th><th class="num" style="width:100px">금액</th></tr></thead>
+                    <tbody>
+                      <tr><td>인증기관 심사료</td><td class="num">1 회</td><td class="num">14,500,000</td><td class="num">14,500,000</td></tr>
+                      <tr><td>사전 컨설팅 (외부)</td><td class="num">3 개월</td><td class="num">6,800,000</td><td class="num">20,400,000</td></tr>
+                      <tr><td>보안 PM (M/M)</td><td class="num">3</td><td class="num">7,000,000</td><td class="num">21,000,000</td></tr>
+                      <tr class="sub"><td colspan="3">소계</td><td class="num">55,900,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="proj-label">제로트러스트 도입<span class="meta-line">PRJ-SEC-202 · 2026-Q3~Q4</span></td>
+                <td>
+                  <table class="l3">
+                    <thead><tr><th>항목</th><th class="num" style="width:60px">수량</th><th class="num" style="width:80px">단가</th><th class="num" style="width:100px">금액</th></tr></thead>
+                    <tbody>
+                      <tr><td>ZTNA 솔루션 라이선스</td><td class="num">300 명·년</td><td class="num">180,000</td><td class="num">54,000,000</td></tr>
+                      <tr><td>IdP 통합 컨설팅</td><td class="num">1 식</td><td class="num">18,000,000</td><td class="num">18,000,000</td></tr>
+                      <tr><td>보안 Eng. (M/M)</td><td class="num">5</td><td class="num">6,500,000</td><td class="num">32,500,000</td></tr>
+                      <tr class="sub"><td colspan="3">소계</td><td class="num">104,500,000</td></tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="dept-total">보안 · 컴플라이언스 본부 합계 <strong>₩ 160,400,000</strong></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="grand">
+    <table>
+      <tr><td>공급가액</td><td class="num">614,800,000</td></tr>
+      <tr><td>부가세 (10%)</td><td class="num">61,480,000</td></tr>
+      <tr class="total"><td>총 청구액</td><td class="num">₩ 676,280,000</td></tr>
+    </table>
+  </div>
+</body>
+</html>

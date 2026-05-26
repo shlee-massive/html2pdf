@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>청구서 — 종합 스트레스 테스트</title>
+<style>
+  /* E. @page 마진 박스 (페이지 번호 / running header) — WeasyPrint/Prince 만 지원 */
+  @page {
+    size: A4;
+    margin: 18mm 14mm 20mm;
+    @top-right {
+      content: "INV-2026-Y-0001 · (주)매시브링크스";
+      font-family: "Noto Sans KR", sans-serif;
+      font-size: 9px;
+      color: #6b6b73;
+    }
+    @bottom-center {
+      content: counter(page) " / " counter(pages);
+      font-family: "Noto Sans KR", sans-serif;
+      font-size: 9.5px;
+      color: #6b6b73;
+    }
+    @bottom-right {
+      content: "발행 2026-05-26";
+      font-family: "Noto Sans KR", sans-serif;
+      font-size: 9px;
+      color: #6b6b73;
+    }
+  }
+  @page :first {
+    @top-right { content: ""; }
+  }
+
+  body {
+    font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 10.5px;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  h2 {
+    font-size: 13px;
+    margin: 22px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #1a1a1a;
+    letter-spacing: -0.005em;
+  }
+  h2 .tag {
+    font-size: 9.5px;
+    color: #6b6b73;
+    font-weight: 400;
+    margin-left: 8px;
+    letter-spacing: 0.04em;
+  }
+  .meta { color: #6b6b73; font-size: 11px; }
+  .meta strong { color: #1a1a1a; }
+
+  /* F. 로고/QR — 인라인 SVG */
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .top .left { flex: 1; }
+  .top .right { text-align: right; }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .logo svg { width: 28px; height: 28px; }
+  .logo-text {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+  .barcode { display: block; margin-left: auto; }
+
+  table { border-collapse: collapse; }
+
+  /* B+C. 가로 와이드 매트릭스 + rowspan */
+  table.matrix {
+    width: 100%;
+    font-size: 9px;
+    table-layout: auto;
+    border: 1px solid #1a1a1a;
+  }
+  table.matrix thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 5px 4px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 8.5px;
+    border-right: 1px solid #2a2a32;
+    white-space: nowrap;
+  }
+  table.matrix tbody th {
+    background: #fafafc;
+    text-align: left;
+    padding: 5px 6px;
+    border-bottom: 1px solid #ececf0;
+    border-right: 1px solid #d8d8de;
+    font-weight: 600;
+  }
+  table.matrix tbody th.group {
+    background: #1a1a1a;
+    color: #fff;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    width: 22px;
+  }
+  table.matrix tbody td {
+    padding: 5px 4px;
+    border-bottom: 1px solid #ececf0;
+    border-right: 1px solid #ececf0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  table.matrix tfoot td, table.matrix tfoot th {
+    background: #fafafc;
+    font-weight: 700;
+    border-top: 2px solid #1a1a1a;
+    padding: 6px 4px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  table.matrix tfoot th { text-align: left; }
+  table.matrix td.total, table.matrix th.total {
+    background: #fff8e6;
+    font-weight: 600;
+  }
+
+  /* A. 긴 단일 표 (thead 반복) */
+  table.items {
+    width: 100%;
+    font-size: 10px;
+    border: 1px solid #1a1a1a;
+  }
+  table.items thead th {
+    background: #1a1a1a;
+    color: #fff;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 10px;
+    /* thead 가 페이지마다 자동 반복되도록 */
+  }
+  table.items thead { display: table-header-group; }
+  table.items tbody tr { page-break-inside: avoid; break-inside: avoid; }
+  table.items td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #ececf0;
+    vertical-align: top;
+  }
+  table.items td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.items tr.cat-head td {
+    background: #fafafc;
+    font-weight: 700;
+    border-top: 1px solid #1a1a1a;
+    font-size: 10.5px;
+    color: #1a1a1a;
+  }
+  table.items tfoot td {
+    background: #fafafc;
+    font-weight: 700;
+    border-top: 2px solid #1a1a1a;
+    padding: 8px;
+    text-align: right;
+  }
+
+  /* D. 긴 텍스트 / URL / CJK */
+  .longcell {
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 9px;
+    color: #6b6b73;
+    line-height: 1.45;
+    display: block;
+    margin-top: 2px;
+  }
+
+  /* F. 사인 + QR 블록 */
+  .signatures {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+    page-break-inside: avoid;
+  }
+  .sig-box {
+    flex: 1;
+    border: 1px solid #d8d8de;
+    padding: 12px;
+    background: #fff;
+  }
+  .sig-box h3 { font-size: 11px; margin: 0 0 6px; color: #6b6b73; font-weight: 600; }
+  .sig-box .line {
+    border-bottom: 1px solid #1a1a1a;
+    height: 36px;
+    margin: 14px 0 6px;
+    position: relative;
+  }
+  .sig-box .line svg { position: absolute; bottom: 2px; left: 4px; height: 32px; }
+  .sig-box .name { font-size: 10.5px; }
+  .sig-box .name strong { display: block; font-size: 12px; }
+  .qr-box {
+    width: 96px;
+    text-align: center;
+    border: 1px solid #d8d8de;
+    padding: 10px;
+    background: #fff;
+  }
+  .qr-box svg { width: 76px; height: 76px; display: block; margin: 0 auto 4px; }
+  .qr-box .label { font-size: 8.5px; color: #6b6b73; }
+
+  .grand {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .grand table { width: 340px; }
+  .grand td { padding: 6px 12px; font-size: 11.5px; }
+  .grand td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .grand tr.total td {
+    font-weight: 700;
+    font-size: 16px;
+    border-top: 2px solid #1a1a1a;
+    padding-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="left">
+    <div class="logo">
+      <!-- F. 인라인 SVG 로고 -->
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="28" height="28" rx="6" fill="#1a1a1a"/>
+        <path d="M9 22 L9 10 L13 10 L16 16 L19 10 L23 10 L23 22 L20 22 L20 14 L17 20 L15 20 L12 14 L12 22 Z" fill="#fff"/>
+      </svg>
+      <span class="logo-text">MassiveLinks Co., Ltd.</span>
+    </div>
+    <h1>연간 종합 청구서</h1>
+    <div class="meta">
+      <strong>INV-2026-Y-0001</strong> · 발행일 2026-05-26 · 결제기한 2026-06-30<br>
+      청구처: 매시브링크스 주식회사 / 대표 이상혁 / 사업자등록 123-45-67890
+    </div>
+  </div>
+  <div class="right">
+    <!-- F. 인라인 SVG 바코드 (Code-39 풍 가짜) -->
+    <svg class="barcode" width="180" height="42" viewBox="0 0 180 42" xmlns="http://www.w3.org/2000/svg">
+      <rect width="180" height="42" fill="#fff"/>
+      <g fill="#1a1a1a">
+        <rect x="0" y="0" width="2" height="34"/>
+        <rect x="4" y="0" width="1" height="34"/>
+        <rect x="7" y="0" width="3" height="34"/>
+        <rect x="12" y="0" width="1" height="34"/>
+        <rect x="15" y="0" width="2" height="34"/>
+        <rect x="19" y="0" width="3" height="34"/>
+        <rect x="24" y="0" width="1" height="34"/>
+        <rect x="27" y="0" width="2" height="34"/>
+        <rect x="31" y="0" width="1" height="34"/>
+        <rect x="34" y="0" width="3" height="34"/>
+        <rect x="39" y="0" width="2" height="34"/>
+        <rect x="43" y="0" width="1" height="34"/>
+        <rect x="46" y="0" width="3" height="34"/>
+        <rect x="51" y="0" width="1" height="34"/>
+        <rect x="54" y="0" width="2" height="34"/>
+        <rect x="58" y="0" width="3" height="34"/>
+        <rect x="63" y="0" width="1" height="34"/>
+        <rect x="66" y="0" width="2" height="34"/>
+        <rect x="70" y="0" width="3" height="34"/>
+        <rect x="75" y="0" width="1" height="34"/>
+        <rect x="78" y="0" width="2" height="34"/>
+        <rect x="82" y="0" width="1" height="34"/>
+        <rect x="85" y="0" width="3" height="34"/>
+        <rect x="90" y="0" width="2" height="34"/>
+        <rect x="94" y="0" width="1" height="34"/>
+        <rect x="97" y="0" width="3" height="34"/>
+        <rect x="102" y="0" width="1" height="34"/>
+        <rect x="105" y="0" width="2" height="34"/>
+        <rect x="109" y="0" width="3" height="34"/>
+        <rect x="114" y="0" width="1" height="34"/>
+        <rect x="117" y="0" width="2" height="34"/>
+        <rect x="121" y="0" width="3" height="34"/>
+        <rect x="126" y="0" width="1" height="34"/>
+        <rect x="129" y="0" width="2" height="34"/>
+        <rect x="133" y="0" width="1" height="34"/>
+        <rect x="136" y="0" width="3" height="34"/>
+        <rect x="141" y="0" width="2" height="34"/>
+        <rect x="145" y="0" width="1" height="34"/>
+        <rect x="148" y="0" width="3" height="34"/>
+        <rect x="153" y="0" width="2" height="34"/>
+        <rect x="157" y="0" width="1" height="34"/>
+        <rect x="160" y="0" width="3" height="34"/>
+        <rect x="165" y="0" width="2" height="34"/>
+        <rect x="169" y="0" width="1" height="34"/>
+        <rect x="172" y="0" width="3" height="34"/>
+        <rect x="177" y="0" width="2" height="34"/>
+      </g>
+      <text x="90" y="40" text-anchor="middle" font-family="SF Mono, Menlo, monospace" font-size="8" fill="#1a1a1a">*INV2026Y0001*</text>
+    </svg>
+  </div>
+</div>
+
+<!-- B + C. 월별 × 카테고리 매트릭스 (rowspan 그룹 + 12열 가로폭) -->
+<h2>월별 청구 매트릭스 <span class="tag">B. rowspan 그룹 · C. 12개월 컬럼 가로폭</span></h2>
+<table class="matrix">
+  <thead>
+    <tr>
+      <th></th><th></th>
+      <th>1월</th><th>2월</th><th>3월</th><th>4월</th><th>5월</th><th>6월</th>
+      <th>7월</th><th>8월</th><th>9월</th><th>10월</th><th>11월</th><th>12월</th>
+      <th class="total">연간 합계</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="3" class="group">인프라</th>
+      <th>서버 · 컴퓨트</th>
+      <td>3,200</td><td>3,200</td><td>3,400</td><td>3,400</td><td>3,400</td><td>3,600</td>
+      <td>3,800</td><td>4,000</td><td>4,000</td><td>4,200</td><td>4,200</td><td>4,400</td>
+      <td class="total">44,800</td>
+    </tr>
+    <tr>
+      <th>네트워크 · CDN</th>
+      <td>1,100</td><td>1,100</td><td>1,150</td><td>1,200</td><td>1,200</td><td>1,300</td>
+      <td>1,400</td><td>1,500</td><td>1,500</td><td>1,550</td><td>1,600</td><td>1,700</td>
+      <td class="total">16,300</td>
+    </tr>
+    <tr>
+      <th>스토리지 · 백업</th>
+      <td>600</td><td>620</td><td>640</td><td>660</td><td>680</td><td>700</td>
+      <td>720</td><td>740</td><td>760</td><td>780</td><td>800</td><td>820</td>
+      <td class="total">8,520</td>
+    </tr>
+    <tr>
+      <th rowspan="2" class="group">SaaS</th>
+      <th>관찰성 · 모니터링</th>
+      <td>900</td><td>900</td><td>900</td><td>900</td><td>900</td><td>900</td>
+      <td>900</td><td>900</td><td>900</td><td>900</td><td>900</td><td>900</td>
+      <td class="total">10,800</td>
+    </tr>
+    <tr>
+      <th>협업 · 개발도구</th>
+      <td>550</td><td>550</td><td>550</td><td>600</td><td>600</td><td>600</td>
+      <td>620</td><td>620</td><td>620</td><td>650</td><td>650</td><td>650</td>
+      <td class="total">7,260</td>
+    </tr>
+    <tr>
+      <th rowspan="2" class="group">서비스</th>
+      <th>외부 컨설팅</th>
+      <td>0</td><td>0</td><td>2,500</td><td>2,500</td><td>2,500</td><td>0</td>
+      <td>1,800</td><td>1,800</td><td>0</td><td>3,200</td><td>3,200</td><td>0</td>
+      <td class="total">17,500</td>
+    </tr>
+    <tr>
+      <th>운영 지원 (SLA)</th>
+      <td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td>
+      <td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td><td>1,200</td>
+      <td class="total">14,400</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <th colspan="2">월별 합계 (천 원)</th>
+      <td>7,550</td><td>7,570</td><td>10,340</td><td>10,460</td><td>10,480</td><td>8,300</td>
+      <td>10,440</td><td>10,760</td><td>8,980</td><td>12,480</td><td>12,550</td><td>9,670</td>
+      <td class="total">119,580</td>
+    </tr>
+  </tfoot>
+</table>
+
+<!-- A. 긴 단일 표 (thead 반복) — 청구 명세 -->
+<h2>세부 청구 명세 <span class="tag">A. 50+ 행 thead 반복 · D. 긴 URL/CJK 셀</span></h2>
+<table class="items">
+  <thead>
+    <tr>
+      <th style="width:28px">#</th>
+      <th>항목 · 설명</th>
+      <th style="width:60px" class="num">수량</th>
+      <th style="width:80px" class="num">단가 (원)</th>
+      <th style="width:100px" class="num">금액 (원)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="cat-head"><td colspan="5">[1] 인프라 — 서버 · 컴퓨트</td></tr>
+    <tr><td>1</td><td>AWS EC2 m6i.4xlarge 온디맨드 (Seoul, ap-northeast-2)<span class="longcell">https://ap-northeast-2.console.aws.amazon.com/ec2/home?region=ap-northeast-2#InstanceDetails:instanceId=i-0a1b2c3d4e5f6g7h8</span></td><td class="num">8,760 h</td><td class="num">920</td><td class="num">8,059,200</td></tr>
+    <tr><td>2</td><td>AWS EC2 c6g.2xlarge 예약 1년 (Tokyo)</td><td class="num">12 개월</td><td class="num">312,000</td><td class="num">3,744,000</td></tr>
+    <tr><td>3</td><td>AWS EBS gp3 (10TB 프로비저닝, IOPS 16k)</td><td class="num">12 개월</td><td class="num">186,000</td><td class="num">2,232,000</td></tr>
+    <tr><td>4</td><td>Cloudflare Workers (Bundled, 표준)</td><td class="num">1 년</td><td class="num">2,400,000</td><td class="num">2,400,000</td></tr>
+    <tr><td>5</td><td>오라클 클라우드 Compute (BM.Standard3.64)<span class="longcell">URL: https://cloud.oracle.com/compute/instances/ocid1.instance.oc1.ap-seoul-1.anzwsljrabcdefghijklmnopqrstuvwxyz0123456789ABCDEFG</span></td><td class="num">3 개월</td><td class="num">4,800,000</td><td class="num">14,400,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[2] 인프라 — 네트워크 · CDN</td></tr>
+    <tr><td>6</td><td>Cloudflare Pro (Enterprise tier)</td><td class="num">1 년</td><td class="num">3,600,000</td><td class="num">3,600,000</td></tr>
+    <tr><td>7</td><td>AWS CloudFront (이그레스 200 TB)</td><td class="num">200 TB</td><td class="num">62,000</td><td class="num">12,400,000</td></tr>
+    <tr><td>8</td><td>Akamai 라이브 스트리밍 옵션</td><td class="num">6 개월</td><td class="num">1,200,000</td><td class="num">7,200,000</td></tr>
+    <tr><td>9</td><td>한국정보보호진흥원 인증서 SSL/TLS Wildcard 3년</td><td class="num">1 식</td><td class="num">820,000</td><td class="num">820,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[3] SaaS — 모니터링 · 개발도구</td></tr>
+    <tr><td>10</td><td>Datadog Pro (Host) — APM + Log 1년 약정<span class="longcell">계약 ID: dd-contract-2026-mass-link-co-ltd-renewal-fy26-q1-asia-pacific-seoul-region-multi-tenant-enterprise-tier</span></td><td class="num">25 호스트</td><td class="num">216,000</td><td class="num">5,400,000</td></tr>
+    <tr><td>11</td><td>Sentry Business (월간 50M 이벤트)</td><td class="num">1 년</td><td class="num">3,840,000</td><td class="num">3,840,000</td></tr>
+    <tr><td>12</td><td>GitHub Enterprise (시트 라이선스)</td><td class="num">25 시트</td><td class="num">252,000</td><td class="num">6,300,000</td></tr>
+    <tr><td>13</td><td>JetBrains All Products Pack (조직)</td><td class="num">15 시트</td><td class="num">336,000</td><td class="num">5,040,000</td></tr>
+    <tr><td>14</td><td>Linear Plus (조직)</td><td class="num">22 시트</td><td class="num">132,000</td><td class="num">2,904,000</td></tr>
+    <tr><td>15</td><td>Notion Business (조직)</td><td class="num">35 시트</td><td class="num">198,000</td><td class="num">6,930,000</td></tr>
+    <tr><td>16</td><td>Slack Business+ (조직)</td><td class="num">42 시트</td><td class="num">156,000</td><td class="num">6,552,000</td></tr>
+    <tr><td>17</td><td>Figma Organization (라이선스)</td><td class="num">12 시트</td><td class="num">216,000</td><td class="num">2,592,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[4] 데이터 · ML</td></tr>
+    <tr><td>18</td><td>Snowflake 크레딧 (Enterprise) — Asia Pacific Seoul</td><td class="num">12,000</td><td class="num">2,900</td><td class="num">34,800,000</td></tr>
+    <tr><td>19</td><td>dbt Cloud Team (1년 약정)</td><td class="num">1</td><td class="num">7,200,000</td><td class="num">7,200,000</td></tr>
+    <tr><td>20</td><td>Fivetran 커넥터 (Standard tier)</td><td class="num">12 개</td><td class="num">1,200,000</td><td class="num">14,400,000</td></tr>
+    <tr><td>21</td><td>Hugging Face Inference Endpoint (A10G)</td><td class="num">6 개월</td><td class="num">3,400,000</td><td class="num">20,400,000</td></tr>
+    <tr><td>22</td><td>Pinecone Standard (Pods, 1년)</td><td class="num">1</td><td class="num">14,400,000</td><td class="num">14,400,000</td></tr>
+    <tr><td>23</td><td>OpenAI API 사용량 (GPT-4.1 / GPT-5 mix)<span class="longcell">사용 키: sk-proj-aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0uV1wX2yZ3aB4cD5eF6gH7iJ8kL9mN0oP1qR2sT3uV4wX5yZ</span></td><td class="num">1 식</td><td class="num">42,000,000</td><td class="num">42,000,000</td></tr>
+    <tr><td>24</td><td>Anthropic Claude API (Sonnet/Opus, Tier 4)</td><td class="num">1 식</td><td class="num">36,800,000</td><td class="num">36,800,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[5] 보안 · 컴플라이언스</td></tr>
+    <tr><td>25</td><td>ISMS-P 인증 심사료 (인증기관)</td><td class="num">1 회</td><td class="num">14,500,000</td><td class="num">14,500,000</td></tr>
+    <tr><td>26</td><td>외부 모의 침투 테스트 (반기 1회)</td><td class="num">2 회</td><td class="num">8,200,000</td><td class="num">16,400,000</td></tr>
+    <tr><td>27</td><td>SIEM 라이선스 (Splunk Enterprise, 1년)</td><td class="num">1</td><td class="num">28,000,000</td><td class="num">28,000,000</td></tr>
+    <tr><td>28</td><td>SAST/DAST 스캐너 (Snyk Business)</td><td class="num">1 년</td><td class="num">12,600,000</td><td class="num">12,600,000</td></tr>
+    <tr><td>29</td><td>Vault Enterprise (1년)</td><td class="num">1</td><td class="num">18,000,000</td><td class="num">18,000,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[6] 인력 · 외부 용역</td></tr>
+    <tr><td>30</td><td>플랫폼 본부 데이터 엔지니어 (시니어, 풀타임)<span class="longcell">발령부서명: 매시브링크스주식회사데이터플랫폼본부데이터엔지니어링팀솔루션개발파트지원그룹 (재직 ID MSL-D-2024-0117)</span></td><td class="num">12 M/M</td><td class="num">6,500,000</td><td class="num">78,000,000</td></tr>
+    <tr><td>31</td><td>AI · ML 본부 ML Platform Eng. ×2 (시니어)</td><td class="num">24 M/M</td><td class="num">6,800,000</td><td class="num">163,200,000</td></tr>
+    <tr><td>32</td><td>SRE 채용 (1명, 12개월)</td><td class="num">12 M/M</td><td class="num">6,300,000</td><td class="num">75,600,000</td></tr>
+    <tr><td>33</td><td>QA Eng. 외주 (3명, 6개월)</td><td class="num">18 M/M</td><td class="num">4,200,000</td><td class="num">75,600,000</td></tr>
+    <tr><td>34</td><td>UX 디자이너 외주 (2명, 4개월)</td><td class="num">8 M/M</td><td class="num">5,500,000</td><td class="num">44,000,000</td></tr>
+    <tr><td>35</td><td>외부 보안 컨설팅 (반기)</td><td class="num">2 식</td><td class="num">22,000,000</td><td class="num">44,000,000</td></tr>
+
+    <tr class="cat-head"><td colspan="5">[7] 기타 운영비</td></tr>
+    <tr><td>36</td><td>출장비 (국내 24회, 해외 4회)</td><td class="num">28 회</td><td class="num">1,250,000</td><td class="num">35,000,000</td></tr>
+    <tr><td>37</td><td>전사 교육 · 컨퍼런스 등록</td><td class="num">1 식</td><td class="num">18,000,000</td><td class="num">18,000,000</td></tr>
+    <tr><td>38</td><td>도서 · 자료 구매</td><td class="num">1 식</td><td class="num">3,600,000</td><td class="num">3,600,000</td></tr>
+    <tr><td>39</td><td>법률 자문 (월 정액)</td><td class="num">12 개월</td><td class="num">2,500,000</td><td class="num">30,000,000</td></tr>
+    <tr><td>40</td><td>회계 · 세무 자문 (월 정액)</td><td class="num">12 개월</td><td class="num">1,800,000</td><td class="num">21,600,000</td></tr>
+    <tr><td>41</td><td>사무실 임차료 (분기 정산)</td><td class="num">4 분기</td><td class="num">28,000,000</td><td class="num">112,000,000</td></tr>
+    <tr><td>42</td><td>각종 유틸리티 (전기/통신)</td><td class="num">12 개월</td><td class="num">2,200,000</td><td class="num">26,400,000</td></tr>
+    <tr><td>43</td><td>경조사 · 복리후생</td><td class="num">1 식</td><td class="num">14,400,000</td><td class="num">14,400,000</td></tr>
+    <tr><td>44</td><td>마케팅 · PR 외주</td><td class="num">1 식</td><td class="num">24,000,000</td><td class="num">24,000,000</td></tr>
+    <tr><td>45</td><td>이벤트 · 워크샵 (반기)</td><td class="num">2 회</td><td class="num">8,500,000</td><td class="num">17,000,000</td></tr>
+    <tr><td>46</td><td>장비 (노트북 · 모니터) 신규 도입</td><td class="num">15 대</td><td class="num">2,800,000</td><td class="num">42,000,000</td></tr>
+    <tr><td>47</td><td>네트워크 장비 (스위치/AP)</td><td class="num">1 식</td><td class="num">8,400,000</td><td class="num">8,400,000</td></tr>
+    <tr><td>48</td><td>예비비 · 우발 비용</td><td class="num">1 식</td><td class="num">12,000,000</td><td class="num">12,000,000</td></tr>
+    <tr><td>49</td><td>전년도 정산 잔액 (이월)</td><td class="num">1 식</td><td class="num">-3,600,000</td><td class="num">-3,600,000</td></tr>
+    <tr><td>50</td><td>기타 (분기별 잔여)</td><td class="num">4 식</td><td class="num">1,200,000</td><td class="num">4,800,000</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><td colspan="5">소계 (공급가액) ₩ 1,167,212,000</td></tr>
+  </tfoot>
+</table>
+
+<!-- F. 사인 / QR / 합계 -->
+<div class="signatures">
+  <div class="sig-box">
+    <h3>발주 확인 (을)</h3>
+    <div class="line">
+      <svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 30 Q15 5 25 25 T50 22 Q60 8 70 28 T100 24" stroke="#1a1a1a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M50 32 L70 32" stroke="#1a1a1a" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="name"><strong>김 현 우</strong>매시브링크스 (주) · CFO</div>
+  </div>
+  <div class="sig-box">
+    <h3>수주 확인 (갑)</h3>
+    <div class="line">
+      <svg viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 28 Q18 8 28 26 Q40 14 52 26 Q64 12 76 26 Q88 16 100 28" stroke="#1a1a1a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="name"><strong>박 지 영</strong>발주처 · 재무팀장</div>
+  </div>
+  <div class="qr-box">
+    <!-- F. 가짜 QR (12x12 격자) -->
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+      <rect width="24" height="24" fill="#fff"/>
+      <g fill="#1a1a1a">
+        <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#fff"/><rect x="2" y="2" width="3" height="3"/>
+        <rect x="17" y="0" width="7" height="7"/><rect x="18" y="1" width="5" height="5" fill="#fff"/><rect x="19" y="2" width="3" height="3"/>
+        <rect x="0" y="17" width="7" height="7"/><rect x="1" y="18" width="5" height="5" fill="#fff"/><rect x="2" y="19" width="3" height="3"/>
+        <rect x="9" y="0" width="1" height="1"/><rect x="11" y="0" width="1" height="1"/><rect x="13" y="0" width="1" height="1"/>
+        <rect x="8" y="2" width="1" height="1"/><rect x="10" y="2" width="2" height="1"/><rect x="14" y="2" width="2" height="1"/>
+        <rect x="9" y="4" width="1" height="1"/><rect x="12" y="4" width="1" height="2"/><rect x="15" y="4" width="1" height="1"/>
+        <rect x="8" y="6" width="2" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="13" y="6" width="2" height="1"/>
+        <rect x="0" y="9" width="1" height="2"/><rect x="2" y="8" width="1" height="1"/><rect x="4" y="9" width="2" height="1"/>
+        <rect x="9" y="8" width="2" height="2"/><rect x="12" y="9" width="1" height="1"/><rect x="14" y="8" width="1" height="2"/>
+        <rect x="17" y="9" width="1" height="1"/><rect x="19" y="8" width="2" height="1"/><rect x="22" y="9" width="1" height="2"/>
+        <rect x="1" y="12" width="1" height="1"/><rect x="3" y="11" width="2" height="2"/><rect x="6" y="12" width="1" height="1"/>
+        <rect x="8" y="11" width="1" height="2"/><rect x="11" y="12" width="2" height="1"/><rect x="14" y="11" width="1" height="2"/>
+        <rect x="16" y="12" width="2" height="1"/><rect x="19" y="11" width="1" height="2"/><rect x="22" y="12" width="1" height="1"/>
+        <rect x="0" y="14" width="2" height="1"/><rect x="3" y="14" width="1" height="2"/><rect x="5" y="15" width="2" height="1"/>
+        <rect x="9" y="14" width="2" height="2"/><rect x="13" y="14" width="1" height="2"/><rect x="15" y="14" width="2" height="1"/>
+        <rect x="18" y="14" width="2" height="1"/><rect x="21" y="14" width="2" height="2"/>
+        <rect x="9" y="17" width="1" height="1"/><rect x="11" y="17" width="1" height="2"/><rect x="13" y="17" width="2" height="1"/>
+        <rect x="16" y="17" width="1" height="1"/><rect x="18" y="18" width="2" height="1"/><rect x="21" y="17" width="1" height="2"/>
+        <rect x="9" y="20" width="2" height="1"/><rect x="12" y="20" width="1" height="2"/><rect x="14" y="21" width="1" height="1"/>
+        <rect x="16" y="20" width="2" height="1"/><rect x="19" y="20" width="1" height="2"/><rect x="22" y="21" width="1" height="1"/>
+        <rect x="9" y="22" width="1" height="1"/><rect x="11" y="23" width="2" height="1"/><rect x="14" y="22" width="2" height="1"/>
+        <rect x="17" y="22" width="1" height="1"/><rect x="20" y="22" width="1" height="1"/><rect x="23" y="22" width="1" height="1"/>
+      </g>
+    </svg>
+    <div class="label">결제 링크</div>
+  </div>
+</div>
+
+<div class="grand">
+  <table>
+    <tr><td>공급가액</td><td class="num">1,167,212,000</td></tr>
+    <tr><td>부가세 (10%)</td><td class="num">116,721,200</td></tr>
+    <tr class="total"><td>총 청구액</td><td class="num">₩ 1,283,933,200</td></tr>
+  </table>
+</div>
+
+</body>
+</html>
