@@ -19,12 +19,12 @@
 
 | 기준 | Gotenberg | WeasyPrint | DocRaptor |
 |------|:---------:|:----------:|:---------:|
-| 단일 요청 (영문)        | **61 ~ 127 ms**  | 61 ~ 3,799 ms       | ~1.8 ~ 3.2 s |
-| 단일 요청 (CJK)         | **131 ~ 392 ms** | 2,767 ~ 4,844 ms    | ~1.7 ~ 3.2 s |
-| 동시 처리량 (conc=4)    | **6 ~ 28 req/s** | 0.2 ~ 9.3 req/s     | (SLA 별도)   |
+| 단일 요청 (영문)        | **61 ~ 127 ms**  | 63 ~ 3,832 ms       | ~1.8 ~ 3.2 s |
+| 단일 요청 (CJK)         | **131 ~ 392 ms** | 2,590 ~ 4,806 ms    | ~1.7 ~ 3.2 s |
+| 처리량 (4-in-flight 지속, req/s) | **6 ~ 28** | 0.2 ~ 12.5 | (SLA 별도) |
 | 권장 동시성             | **4**            | 1 / process         | (SLA 별도)   |
 | Thread-safety           | OK               | **불가** (픽스 필요) | OK           |
-| CJK 페널티 (vs 영문)    | 1.5 ~ 2x         | **최대 57x**        | ~1x          |
+| CJK 페널티 (vs 영문)    | 1.5 ~ 2x         | **최대 69x**        | ~1x          |
 | 복잡 레이아웃 정확도    | 양호             | **최고**            | rowspan 회귀 |
 | 비용                    | 무료 (로컬 Docker) | 무료 (로컬 Docker) | 유료 + 워터마크 |
 
@@ -33,7 +33,7 @@
 **성능** ([§3](#3-성능--동시성-곡선-단일-템플릿-깊이), [§4](#4-성능--템플릿--언어-매트릭스-콘텐츠-폭))
 
 - **Gotenberg 동시성 sweet spot = 4.** conc=8 부터 throughput 감소, p95 5배 폭발
-- **WeasyPrint CJK 페널티 최대 57x.** `nested-basic/ko`: 영문 61ms → 한국어 3,457ms. 원인은 Pango 폰트 임베드 비용
+- **WeasyPrint CJK 페널티 최대 69x.** `nested-basic/ja`: 영문 63ms → 일본어 4,324ms. 원인은 Pango 폰트 임베드 비용
 - **invoice 만 예외**: 숫자·통화 중심이라 언어 영향 1.13~1.18배 (다른 템플릿은 5~57배)
 
 **안정성** ([§5](#5-안정성--weasyprint-thread-safety-abort-진단))
@@ -117,34 +117,36 @@ xychart-beta
   - conc=8: throughput −12%, p95 2.5배
   - conc=16: throughput −38%, p95 5.4배
 
-### 3-2. WeasyPrint
+### 3-2. WeasyPrint (`threaded=False` 픽스 적용 상태)
 
 ```mermaid
 xychart-beta
-    title "WeasyPrint throughput vs concurrency"
+    title "WeasyPrint throughput vs concurrency (threaded=False)"
     x-axis "concurrency" [1, 2, 4, 8, 16]
-    y-axis "req/s" 0 --> 2
-    bar [0.26, 0.50, 0.60, 0.70, 1.61]
+    y-axis "req/s" 0 --> 1
+    bar [0.23, 0.23, 0.26, 0.20, 0.26]
 ```
 
-| 동시성 | req/s | avg | p50 | p95 |
-|-------:|------:|-----|-----|-----|
-|  1 | 0.26 | 3847ms | 3835ms | 4008ms |
-|  2 | 0.50 | 3941ms | 3888ms | 4183ms |
-|  4 | 0.60 | 6645ms | 4224ms | **13740ms** |
-|  8 | 0.70 | 8105ms | 5474ms | 13774ms |
-| 16 | 1.61 | 7681ms | 7073ms | 9889ms |
+| 동시성 | req/s | avg | p50 | p95 | max |
+|-------:|------:|-----|-----|-----|-----|
+|  1 | 0.23 |  4355ms |  3756ms |  3874ms | 13241ms |
+|  2 | 0.23 |  8579ms |  7625ms | 17157ms | 17285ms |
+|  4 | 0.26 | 13968ms | 15378ms | 15563ms | 15570ms |
+|  8 | 0.20 | 33786ms | 31086ms | 46355ms | 50234ms |
+| 16 | 0.26 | 33313ms | 31483ms | 58496ms | 62372ms |
 
-- 단일 요청 ~3.85s — Gotenberg 대비 ~35배
-- conc=2 까지 거의 선형, conc=4 부터 p95 가 4s → 13.7s 로 폭발
-- conc=16 의 throughput 회복은 측정 아티팩트 (전 요청이 burst 로 시작해 워커가 완전히 포화 유지). p50 7s 로 사용자 경험상 이미 한계 초과
-- **`threaded=False` 픽스 적용 전 측정값**. 픽스 후에는 동시성과 무관하게 사실상 직렬 처리 (§5 참조)
+- **처리량이 동시성과 무관하게 0.20 ~ 0.26 req/s 로 평탄**. `threaded=False` 로 서버가 요청을 직렬화하기 때문에 추가 워커는 큐에 쌓일 뿐
+- **지연만 비례 폭증**: conc=1 avg 4.4s → conc=8 avg 33.8s, p95 46.4s
+- 같은 프로세스 내에서 WeasyPrint 동시성을 늘리는 것은 **사용자 체감만 악화**시키며 throughput 이득은 0
+- 진짜 동시성이 필요하면 **별도 프로세스(`gunicorn -w N --threads 1`)** 로 확장 — §5, §7-2 참조
 
 ---
 
 ## 4. 성능 — 템플릿 × 언어 매트릭스 (콘텐츠 폭)
 
-각 (template, language, backend) 셀에서 baseline 1회 + 동시성 4, 8 요청. (`threaded=True` 상태 측정값; 픽스 후에는 영문 처리량 다소 상승, CJK 거의 동일.)
+각 (template, language, backend) 셀에서 baseline 1회 + **4 워커 in-flight 지속 부하 8 요청**. WeasyPrint 는 `threaded=False` 픽스 적용 상태에서 재측정 (모든 셀 8/0 fail = 100% 성공).
+
+> 본 보고서의 "**conc=4**" / "**4-in-flight**" 는 **4 워커가 동시에 변환 요청을 처리하는 상태를 유지하면서 총 N건을 처리**한다는 의미다. 단발 4건 배치가 아니라, 한 워커가 끝나면 즉시 다음 요청을 시작해 *항상 4건이 in-flight* 인 상태. `req/s = 완료_요청수 / 벽시계_총시간`.
 
 ### 4-1. 가장 중요한 발견: WeasyPrint 의 CJK 페널티
 
@@ -152,12 +154,12 @@ xychart-beta
 
 | Template          | en   | ko 배수   | ja 배수   |
 |-------------------|-----:|----------:|----------:|
-| nested-basic      | 1.0  | **56.7x** | **47.4x** |
+| nested-basic      | 1.0  | **41.1x** | **68.6x** |
 | invoice           | 1.0  | 1.13x     | 1.18x     |
-| nested-deep       | 1.0  | 16.5x     | 17.5x     |
-| nested-split      | 1.0  | 7.5x      | 8.0x      |
-| nested-projects   | 1.0  | 9.7x      | 9.4x      |
-| nested-stress     | 1.0  | 4.6x      | 4.8x      |
+| nested-deep       | 1.0  | 10.3x     | 10.7x     |
+| nested-split      | 1.0  | 5.7x      | 6.2x      |
+| nested-projects   | 1.0  | 11.3x     | 11.9x     |
+| nested-stress     | 1.0  | 11.3x     | 12.3x     |
 
 > 동일 측정을 Gotenberg 로 하면 ko 배수가 1.6~1.9 수준. **CJK 페널티는 WeasyPrint(Pango/Cairo) 고유 이슈**.
 
@@ -167,35 +169,35 @@ invoice 만 유독 영향이 작은 이유: 페이지가 숫자·날짜·통화 
 
 | Template          | KB   | Lang | Gotenberg | WeasyPrint | WeasyP / Gtb |
 |-------------------|-----:|:----:|----------:|-----------:|-------------:|
-| nested-basic      |  5.5 | ko   |    189    |    3457    | 18.3x        |
-| nested-basic      |  5.6 | ja   |    131    |    2889    | 22.1x        |
-| nested-basic      |  5.4 | en   |     61    |      61    |  1.0x        |
-| invoice           | 12.5 | ko   |    232    |    4312    | 18.6x        |
-| invoice           | 12.5 | ja   |    392    |    4484    | 11.4x        |
-| invoice           | 12.2 | en   |    127    |    3799    | 29.9x        |
-| nested-deep       | 13.3 | ko   |    147    |    2767    | 18.8x        |
-| nested-deep       | 13.6 | ja   |    234    |    2936    | 12.5x        |
-| nested-deep       | 13.0 | en   |     84    |     168    |  2.0x        |
-| nested-split      | 14.0 | ko   |    141    |    2922    | 20.7x        |
-| nested-split      | 14.2 | ja   |    167    |    3146    | 18.8x        |
-| nested-split      | 13.6 | en   |     80    |     391    |  4.9x        |
-| nested-projects   | 21.2 | ko   |    158    |    3520    | 22.3x        |
-| nested-projects   | 21.5 | ja   |    162    |    3428    | 21.2x        |
-| nested-projects   | 20.5 | en   |     85    |     363    |  4.3x        |
-| nested-stress     | 25.9 | ko   |    164    |    4662    | 28.4x        |
-| nested-stress     | 26.3 | ja   |    200    |    4844    | 24.2x        |
-| nested-stress     | 25.2 | en   |     96    |    1004    | 10.5x        |
+| nested-basic      |  5.5 | ko   |    189    |    2590    | 13.7x        |
+| nested-basic      |  5.6 | ja   |    131    |    4324    | 33.0x        |
+| nested-basic      |  5.4 | en   |     61    |      63    |  1.0x        |
+| invoice           | 12.5 | ko   |    232    |    4316    | 18.6x        |
+| invoice           | 12.5 | ja   |    392    |    4518    | 11.5x        |
+| invoice           | 12.2 | en   |    127    |    3832    | 30.2x        |
+| nested-deep       | 13.3 | ko   |    147    |    2758    | 18.8x        |
+| nested-deep       | 13.6 | ja   |    234    |    2888    | 12.3x        |
+| nested-deep       | 13.0 | en   |     84    |     269    |  3.2x        |
+| nested-split      | 14.0 | ko   |    141    |    2828    | 20.1x        |
+| nested-split      | 14.2 | ja   |    167    |    3047    | 18.2x        |
+| nested-split      | 13.6 | en   |     80    |     494    |  6.2x        |
+| nested-projects   | 21.2 | ko   |    158    |    3119    | 19.7x        |
+| nested-projects   | 21.5 | ja   |    162    |    3284    | 20.3x        |
+| nested-projects   | 20.5 | en   |     85    |     275    |  3.2x        |
+| nested-stress     | 25.9 | ko   |    164    |    4408    | 26.9x        |
+| nested-stress     | 26.3 | ja   |    200    |    4806    | 24.0x        |
+| nested-stress     | 25.2 | en   |     96    |     390    |  4.1x        |
 
-### 4-3. 동시성 4 throughput 요약
+### 4-3. 4-in-flight 지속 처리량 요약
 
 | 환경 | Gotenberg | WeasyPrint | 비고 |
 |------|----------:|-----------:|------|
-| CJK 평균 (ko/ja) | 10.9 req/s | 0.31 req/s | WeasyPrint 는 사실상 1 req/s 미만 |
-| 영문 평균 | 22.7 req/s | 3.1 req/s | invoice/en 만 0.80 으로 유독 낮음 |
+| CJK 평균 (ko/ja) | 10.9 req/s | 0.29 req/s | WeasyPrint 는 1 req/s 미만 |
+| 영문 평균 | 22.7 req/s | 4.80 req/s | `invoice/en` 만 0.26 outlier (baseline 3.8s); 제외 시 평균 5.7 req/s |
 
-극단 케이스 (`nested-stress/ko` @ conc=4):
+극단 케이스 (`nested-stress/ko`, 4-in-flight):
 - Gotenberg 12.8 req/s, p95 310ms
-- WeasyPrint 0.19 req/s, p95 21495ms → 사용 불가
+- WeasyPrint 0.22 req/s, p95 18.5s → 사용 불가
 
 ---
 
