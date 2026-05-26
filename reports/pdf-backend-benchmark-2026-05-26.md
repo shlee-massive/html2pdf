@@ -13,15 +13,43 @@
 
 ## 1. TL;DR
 
-| 결론 | 근거 위치 |
-|------|-----------|
-| **운영 1차 백엔드는 Gotenberg.** 모든 셀에서 빠르고 안정적. CJK 영향이 1.5~2배 이내. | §3, §4 |
-| **WeasyPrint 는 CJK 콘텐츠에서 영문 대비 최대 57배 느리다.** 단일 요청 처리 시간이 ~4초. | §4 |
-| **WeasyPrint 는 thread-safe 가 아니다.** Flask 개발 서버 기본 `threaded=True` 와 만나면 SIGSEGV. **백트레이스로 확정 진단됨**. 본 리포에 `threaded=False` 픽스 적용. | §5 |
-| **레이아웃 정확도는 WeasyPrint 가 최고**, Gotenberg 차순, DocRaptor 는 `rowspan` + `vertical-rl` 매트릭스에서 페이지를 분할해버리는 회귀 있음. | §6 |
-| **일본어 콘텐츠는 같은 템플릿이라도 페이지 +1**, ko/en 보다 글자수가 많아 `page-break-inside: avoid` 만으로는 막을 수 없다. | §6 |
-| **Gotenberg 의 동시성 sweet spot 은 4**. 그 이상은 throughput 감소 + p95 폭발. | §3 |
-| **DocRaptor 는 부하 테스트 대상에서 제외**. 외부 유료 API + 워터마크 + 동시 호출 SLA 미상. 본 보고서에서는 출력 품질만 다룬다. | §2-3 |
+> **한 줄 결론**: 운영 1차 백엔드는 **Gotenberg** (속도·안정성 압도적). **WeasyPrint** 는 thread-safety 픽스 적용 후 레이아웃 정확도가 필요한 비실시간 경로에서만 사용. **DocRaptor** 는 단순 명세에는 좋지만 복잡 레이아웃에서 페이지 분할 회귀가 있어 미리 검증 필수.
+
+### 백엔드 한눈에 비교
+
+| 기준 | Gotenberg | WeasyPrint | DocRaptor |
+|------|:---------:|:----------:|:---------:|
+| 단일 요청 (영문)        | **61 ~ 127 ms**  | 61 ~ 3,799 ms       | ~1.8 ~ 3.2 s |
+| 단일 요청 (CJK)         | **131 ~ 392 ms** | 2,767 ~ 4,844 ms    | ~1.7 ~ 3.2 s |
+| 동시 처리량 (conc=4)    | **6 ~ 28 req/s** | 0.2 ~ 9.3 req/s     | (SLA 별도)   |
+| 권장 동시성             | **4**            | 1 / process         | (SLA 별도)   |
+| Thread-safety           | OK               | **불가** (픽스 필요) | OK           |
+| CJK 페널티 (vs 영문)    | 1.5 ~ 2x         | **최대 57x**        | ~1x          |
+| 복잡 레이아웃 정확도    | 양호             | **최고**            | rowspan 회귀 |
+| 비용                    | 무료 (로컬 Docker) | 무료 (로컬 Docker) | 유료 + 워터마크 |
+
+### 핵심 발견 (테마별)
+
+**성능** ([§3](#3-성능--동시성-곡선-단일-템플릿-깊이), [§4](#4-성능--템플릿--언어-매트릭스-콘텐츠-폭))
+
+- **Gotenberg 동시성 sweet spot = 4.** conc=8 부터 throughput 감소, p95 5배 폭발
+- **WeasyPrint CJK 페널티 최대 57x.** `nested-basic/ko`: 영문 61ms → 한국어 3,457ms. 원인은 Pango 폰트 임베드 비용
+- **invoice 만 예외**: 숫자·통화 중심이라 언어 영향 1.13~1.18배 (다른 템플릿은 5~57배)
+
+**안정성** ([§5](#5-안정성--weasyprint-thread-safety-abort-진단))
+
+- **WeasyPrint + Flask 개발 서버 = SIGSEGV.** werkzeug 기본 `threaded=True` × WeasyPrint thread-safety 미보장 충돌
+- **백트레이스로 확정 진단**: Pango 셰이핑 중 다른 스레드의 GC 와 use-after-free 충돌
+- **이미 알려진 이슈** — Kozea/WeasyPrint [#167](https://github.com/Kozea/WeasyPrint/issues/167)/[#344](https://github.com/Kozea/WeasyPrint/issues/344)/[#684](https://github.com/Kozea/WeasyPrint/issues/684)/[#1402](https://github.com/Kozea/WeasyPrint/issues/1402)/[#2472](https://github.com/Kozea/WeasyPrint/issues/2472) (10년간 반복), 메인테이너 입장 "수정 안 함"
+- **본 리포에 픽스 적용**: `app.run(threaded=False)`. 동일 부하에서 0/16 성공 → 16/16 성공
+
+**출력 품질** ([§6](#6-출력-품질--페이지-수--파일-크기--레이아웃-충실도))
+
+- **WeasyPrint 가 가장 정확** — rowspan + vertical-rl 매트릭스 1 페이지 유지, 그룹 라벨 세로쓰기 정상
+- **DocRaptor 회귀**: 같은 매트릭스를 그룹마다 3 페이지로 분할, vertical-rl 텍스트가 셀 가운데로 흘러나옴
+- **일본어는 페이지 +1 가능성**: 같은 의미 표현에 글자수 더 많음. `page-break-inside: avoid` 만으로는 막을 수 없음
+
+**방법론 주석**: DocRaptor 는 외부 유료 API + 동시성 SLA 미상으로 부하 테스트(§3·§4)에서 제외, 출력 품질(§6)에만 포함.
 
 ---
 
@@ -173,96 +201,32 @@ invoice 만 유독 영향이 작은 이유: 페이지가 숫자·날짜·통화 
 
 ## 5. 안정성 — WeasyPrint thread-safety abort 진단
 
-### 5-1. 증상
+### 요약
 
-첫 매트릭스 실행 중 WeasyPrint 프로세스가 다음으로 abort:
+부하 테스트 중 WeasyPrint 프로세스가 `free(): invalid pointer` 로 abort. 디버그 환경(`PYTHONFAULTHANDLER=1`, `MALLOC_CHECK_=3`, `MALLOC_PERTURB_=42`)에서 백트레이스 채집 → **werkzeug 기본 `threaded=True` × WeasyPrint thread-safety 미보장** 충돌로 확정. 여러 스레드가 동시에 Pango 셰이핑(`weasyprint/text/line_break.py`)에 진입한 사이 한 스레드의 GC가 cffi 객체를 finalize → use-after-free → SIGSEGV.
 
-```
-free(): invalid pointer
-```
+**이건 자원 부족이 아니다.** `free(): invalid pointer` 는 glibc 의 `free()` 가 손상된 힙·잘못된 포인터를 감지해 `abort()` 한 메시지로, C 레벨 메모리 손상 버그(double free / 잘못된 주소 free / 힙 청크 손상)를 의미한다. OOM 시그니처(`Cannot allocate memory`, `MemoryError`, `OOMKilled`) 와는 다르다.
 
-- ~12분 누적 부하 시점 (nested-basic 3종 + nested-deep ko/ja 처리 후) 에 발생
-- `nested-deep/ja` concurrent 배치에서 8개 중 3개 실패 → 이후 baseline 부터 모두 502 → 프로세스 사망
+### 픽스 + 검증
 
-### 5-2. 이건 자원 부족이 아니다
+`server.py` 에 `threaded=False` 한 줄 추가:
 
-`free(): invalid pointer` 는 **glibc 의 `free()` 가 손상된 힙 또는 잘못된 포인터를 감지하여 `abort()` 한 메시지**. 의미하는 것은 C 레벨 메모리 손상 버그:
-
-- 같은 포인터 두 번 `free()` (double free)
-- `malloc()` 이 돌려준 적 없는 주소 `free()`
-- 인접 청크 헤더가 짓밟혀 free 시점에 감지
-
-**메모리 부족·자원 고갈이 아니다.** OOM 시그니처는 `Cannot allocate memory`, Python `MemoryError`, 컨테이너 `OOMKilled` — 어디에도 해당하지 않음.
-
-### 5-3. 백트레이스 채집 (디버그 환경 구성)
-
-`PYTHONFAULTHANDLER=1`, `MALLOC_CHECK_=3`, `MALLOC_PERTURB_=42` 환경에서 동일 시퀀스 재실행 → SIGSEGV (exit 139) + 완전한 Python+C 백트레이스 확보:
-
-```
-Current thread (most recent call first):
-  Garbage-collecting                                  ← Python GC 진행 중
-  weasyprint/text/line_break.py:141 in get_first_line ← Pango 셰이핑 호출
-  ...
-
-Thread (most recent call first):
-  weasyprint/text/line_break.py:100 in setup
-  weasyprint/text/line_break.py:234 in reactivate
-  ...
-
-Thread (...): line_break.py 안에서 또 다른 요청 처리 중
-```
-
-해석:
-
-1. 여러 스레드가 **동시에** `weasyprint/text/line_break.py` (Pango / HarfBuzz cffi 래퍼) 안에 있음
-2. 그 중 한 스레드는 `Garbage-collecting` 라벨이 붙어 cffi 객체를 finalize 하는 시점
-3. 다른 스레드가 같은 객체를 사용 중 → **use-after-free** → SIGSEGV
-
-순수 threading 으로도 같은 버그가 재현됨 (Flask 없이도 발생; 두 번째 백트레이스는 다른 함수 `pdf/fonts.py:build_fonts_dictionary` 에서 잡힘 → 단일 함수 버그가 아닌 **시스템적 race condition**).
-
-### 5-4. 왜 멀티스레드인가
-
-`weasyprint/server.py` 는 `app.run(host="0.0.0.0", port=5000)` 으로 Flask 개발 서버를 그대로 띄운다. **werkzeug 의 기본은 `threaded=True`** — 요청 하나당 스레드 하나. 부하 테스트의 동시성 4 가 곧 4 스레드 동시 `HTML(...).write_pdf()` 진입.
-
-WeasyPrint 공식 문서는 thread-safe 가 아니라고 명시한다. 그러나 사용자가 처음 읽는 공식 docs ([first_steps](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html), [api_reference](https://doc.courtbouillon.org/weasyprint/stable/api_reference.html)) 에는 **thread-safety 경고가 단 한 줄도 없다**.
-
-### 5-5. 픽스 검증
-
-`server.py` 에 `threaded=False` 한 줄 추가 후 동일 시퀀스 재실행:
-
-| 시나리오 | nested-deep/en concurrent (16 req @ conc=4) |
-|----------|----------------------------------------------|
+| 시나리오 | `nested-deep/en` concurrent (16 req @ conc=4) |
+|----------|------------------------------------------------|
 | `threaded=True` (이전) | **0 / 16 성공**, exit 139 (SIGSEGV), 컨테이너 사망 |
 | `threaded=False` (수정 후) | **16 / 16 성공**, p95 525 ms, 컨테이너 정상 |
 
-→ 원인 확정. 다른 가설(Cairo 버그, ABI 부조합, pydyf 호환성 등) 기각.
+본 리포에 적용된 변경: `weasyprint/server.py` (`threaded=False`), `weasyprint/Dockerfile` (`gdb`, `python3-dbg`, `python -X faulthandler`), `docker-compose.yml` (디버그 env vars).
 
-### 5-6. 본 리포에 적용된 픽스
+### 업스트림
 
-- `weasyprint/server.py` : `app.run(host="0.0.0.0", port=5000, threaded=False)` + 사유 주석
-- `weasyprint/Dockerfile` : `gdb`, `python3-dbg`, `python -X faulthandler` (향후 디버그용)
-- `docker-compose.yml` : `MALLOC_CHECK_=3`, `MALLOC_PERTURB_=42`, `PYTHONFAULTHANDLER=1` 환경변수
+WeasyPrint 자체는 thread-safe 가 아님을 공식 인정 (메인테이너 [#684](https://github.com/Kozea/WeasyPrint/issues/684): *"not designed to be thread-safe neither"*). 동일 클래스 segfault 가 10년간 반복 보고됨 ([#167](https://github.com/Kozea/WeasyPrint/issues/167)·[#344](https://github.com/Kozea/WeasyPrint/issues/344)·[#684](https://github.com/Kozea/WeasyPrint/issues/684)·[#1402](https://github.com/Kozea/WeasyPrint/issues/1402)·[#2472](https://github.com/Kozea/WeasyPrint/issues/2472)). 공식 docs 에 thread-safety 경고가 0줄이라는 documentation 갭이 있어, 별도 브랜치 [`weasyprint-thread-safety-contrib`](https://github.com/shlee-massive/html2pdf/tree/weasyprint-thread-safety-contrib/contrib) 에 docs PR 초안 + 최소 재현 스크립트를 작성해 두었다.
 
-### 5-7. Kozea/WeasyPrint Issue tracker 조사
+### 운영 권고
 
-이미 알려진 이슈로 확인. 10년간 동일 클래스 segfault 가 반복 보고됨:
-
-| 이슈 | 연도 | 요지 |
-|------|------|------|
-| [#167](https://github.com/Kozea/WeasyPrint/issues/167) | 2015 | 동시 호출 segfault 원조 (이후 모든 이슈가 dup) |
-| [#344](https://github.com/Kozea/WeasyPrint/issues/344) | 2016 | celery task 에서 SIGSEGV |
-| [#684](https://github.com/Kozea/WeasyPrint/issues/684) | 2018 | celery 멀티스레드 크래시. **메인테이너 답변**: *"not designed to be thread-safe neither"* — 수정 안 함이 공식 입장 |
-| [#1402](https://github.com/Kozea/WeasyPrint/issues/1402) | 2021 | **`get_first_line` segfault — 우리 백트레이스와 정확히 같은 함수**. "race condition that unreferences Fontconfig patterns twice" |
-| [#2472](https://github.com/Kozea/WeasyPrint/issues/2472) | 2025 | Python 3.13+ no-GIL 모드 segfault |
-
-업계 합의된 우회법:
-- gunicorn `-w N --threads 1` (multi-process, single-thread)
-- celery prefork 풀 (또는 gevent 풀 + 큐 동시성 1)
-- Flask 개발 서버 `threaded=False`
-
-### 5-8. Contribution 여지
-
-본 리포의 [`contrib/` 브랜치](https://github.com/shlee-massive/html2pdf/tree/weasyprint-thread-safety-contrib/contrib) 에 **WeasyPrint docs PR 초안**이 있다 (RST 섹션 + 재현 스크립트 + PR 본문). 코드 패치가 아니라 문서 추가 — 메인테이너의 공식 입장상 코드 fix 는 어렵지만, 사용자가 도착하는 공식 docs 에 thread-safety 경고를 추가하는 것은 합리적인 contribution.
+- WeasyPrint 사용 시 **반드시** `threaded=False` 또는 multi-process 단일 스레드 서버 (`gunicorn -w N --threads 1`)
+- celery 는 prefork 풀 (또는 gevent + 큐 동시성 1)
+- 진짜 동시성이 필요하면 워커 프로세스 수로 확보, 같은 프로세스 안에서는 절대 멀티스레드 호출 금지
 
 ---
 
