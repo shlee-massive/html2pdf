@@ -27,7 +27,8 @@ DocRaptor 는 외부 유료 API 라 부하 테스트 대상에서 제외했다.
 
 ## 한 줄 결론
 
-- **속도**: Gotenberg 가 모든 셀에서 압도적으로 빠르고 안정적. WeasyPrint 는 CJK 콘텐츠에서 영문 대비 최대 57배 느리며 누적 부하 시 컨테이너가 C 레벨 메모리 오류로 다운된 사례가 있다.
+- **속도**: Gotenberg 가 모든 셀에서 압도적으로 빠르고 안정적. WeasyPrint 는 CJK 콘텐츠에서 영문 대비 최대 57배 느림.
+- **안정성**: 부하 테스트 중 WeasyPrint 프로세스가 SIGSEGV 로 사망한 케이스를 백트레이스로 확정 진단함 — **werkzeug 의 기본 `threaded=True` + WeasyPrint thread-safety 미보장**의 충돌. 본 리포의 `weasyprint/server.py` 에 `threaded=False` 픽스 적용 완료. 자세한 분석은 [`matrix-2026-05-26.md`](matrix-2026-05-26.md) §4 참조.
 - **품질**: 복잡한 nested · rowspan · vertical-rl 정확도는 WeasyPrint 가 가장 충실. Gotenberg 도 무난. DocRaptor 는 rowspan 매트릭스를 페이지마다 분할하는 회귀가 있다.
 - **권장**: 일반 운영은 Gotenberg, 정밀 인쇄·복잡 레이아웃이 필요하면 WeasyPrint (단 CJK + 동시성은 회피).
 

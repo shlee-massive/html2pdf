@@ -19,4 +19,7 @@ def health():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    # WeasyPrint 는 thread-safe 하지 않다 (공식 문서). werkzeug 개발 서버는
+    # 기본이 threaded=True 라 동시 요청 시 같은 Pango/HarfBuzz 객체에 여러
+    # 스레드가 접근 → use-after-free / SIGSEGV. 명시적으로 비활성.
+    app.run(host="0.0.0.0", port=5000, threaded=False)

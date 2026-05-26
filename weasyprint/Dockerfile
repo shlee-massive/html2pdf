@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libpango-1.0-0 \
         libpangoft2-1.0-0 \
         libharfbuzz0b \
+        gdb \
+        python3-dbg \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir weasyprint==62.3 pydyf==0.10.0 flask==3.0.3
@@ -16,4 +18,5 @@ WORKDIR /app
 COPY server.py /app/server.py
 
 EXPOSE 5000
-CMD ["python", "server.py"]
+# -X faulthandler: Python prints C+Python backtrace on fatal signals (SIGABRT, SIGSEGV)
+CMD ["python", "-X", "faulthandler", "server.py"]
