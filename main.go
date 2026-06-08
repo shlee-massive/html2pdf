@@ -222,6 +222,15 @@ type Backend interface {
 	Convert(ctx context.Context, html string) ([]byte, error)
 }
 
+// InvoiceBackend 는 HTML 이 아닌 구조화된 Invoice 데이터를 받는 백엔드용 옵셔널 인터페이스.
+// react-pdf 처럼 자체 컴포넌트 트리로 PDF 를 만드는 엔진은 이 인터페이스를 구현한다.
+// 비교 단위가 "HTML→PDF 변환 비용" → "같은 콘텐츠 end-to-end 생성 비용" 으로 한 단계 추상화된다.
+// 측정 결과 해석 시 반드시 reports/ 에 명시할 것.
+type InvoiceBackend interface {
+	Backend
+	ConvertInvoice(ctx context.Context, inv *Invoice) ([]byte, error)
+}
+
 // Gotenberg: POST /forms/chromium/convert/html with multipart files
 type Gotenberg struct{ BaseURL string }
 
@@ -295,6 +304,33 @@ func (d DocRaptor) Convert(ctx context.Context, html string) ([]byte, error) {
 	return doPDFRequest(req)
 }
 
+// ReactPdf sidecar (this repo의 react-pdf/server.mjs).
+// HTML 을 받지 않고 Invoice JSON 을 받는 점이 다른 백엔드와 다르다.
+// Backend.Convert(html) 호출은 그대로 받되, 내부에서 마지막 set 된 Invoice 를 재사용한다 — 다만
+// 실제 호출 경로(batch loop)는 InvoiceBackend.ConvertInvoice 로 우선 라우팅되므로
+// Convert 는 사실상 fallback (HTML 입력으로는 작동 불가).
+type ReactPdf struct{ BaseURL string }
+
+func (r ReactPdf) Name() string { return "reactpdf" }
+
+func (r ReactPdf) Convert(ctx context.Context, html string) ([]byte, error) {
+	return nil, fmt.Errorf("reactpdf 백엔드는 HTML 입력을 받지 않음 — ConvertInvoice 경로로 호출 필요")
+}
+
+func (r ReactPdf) ConvertInvoice(ctx context.Context, inv *Invoice) ([]byte, error) {
+	body, err := json.Marshal(inv)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		strings.TrimRight(r.BaseURL, "/")+"/pdf", bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return doPDFRequest(req)
+}
+
 func doPDFRequest(req *http.Request) ([]byte, error) {
 	client := &http.Client{Timeout: 120 * time.Second}
 	resp, err := client.Do(req)
@@ -334,6 +370,7 @@ func main() {
 		outDir        = flag.String("out", "output", "output directory")
 		gotenbergURL  = flag.String("gotenberg-url", env("GOTENBERG_URL", "http://localhost:3000"), "Gotenberg base URL")
 		weasyURL      = flag.String("weasyprint-url", env("WEASYPRINT_URL", "http://localhost:5001"), "WeasyPrint base URL")
+		reactPdfURL   = flag.String("reactpdf-url", env("REACTPDF_URL", "http://localhost:5002"), "react-pdf sidecar base URL")
 		docraptorKey  = flag.String("docraptor-key", env("DOCRAPTOR_API_KEY", "YOUR_API_KEY_HERE"), "DocRaptor API key (test mode은 무료, 워터마크 있음)")
 		docraptorTest = flag.Bool("docraptor-test", envBool("DOCRAPTOR_TEST", true), "DocRaptor test mode (무료/워터마크)")
 		dumpHTML      = flag.Bool("dump-html", false, "렌더링된 HTML도 함께 저장")
@@ -341,7 +378,7 @@ func main() {
 	flag.Parse()
 
 	locales := expand(*locale, []string{"ko", "ja", "en"})
-	backends := expand(*backend, []string{"gotenberg", "weasyprint", "docraptor"})
+	backends := expand(*backend, []string{"gotenberg", "weasyprint", "docraptor", "reactpdf"})
 
 	if err := os.MkdirAll(*outDir, 0o755); err != nil {
 		log.Fatalf("mkdir: %v", err)
@@ -351,6 +388,7 @@ func main() {
 		"gotenberg":  Gotenberg{BaseURL: *gotenbergURL},
 		"weasyprint": WeasyPrint{BaseURL: *weasyURL},
 		"docraptor":  DocRaptor{APIKey: *docraptorKey, Test: *docraptorTest},
+		"reactpdf":   ReactPdf{BaseURL: *reactPdfURL},
 	}
 
 	if *serve {
@@ -397,7 +435,14 @@ func main() {
 				continue
 			}
 			start := time.Now()
-			pdf, err := b.Convert(ctx, html)
+			var pdf []byte
+			var err error
+			// react-pdf 처럼 구조화된 입력을 받는 백엔드는 InvoiceBackend 경로로 라우팅.
+			if ib, ok := b.(InvoiceBackend); ok {
+				pdf, err = ib.ConvertInvoice(ctx, inv)
+			} else {
+				pdf, err = b.Convert(ctx, html)
+			}
 			elapsed := time.Since(start)
 			if err != nil {
 				log.Printf("[%s/%s] FAIL (%s): %v", loc, b.Name(), elapsed.Round(time.Millisecond), err)

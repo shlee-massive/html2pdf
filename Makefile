@@ -1,10 +1,11 @@
-.PHONY: up down build run serve run-ko run-ja run-en clean health load load-sweep load-weasy load-weasy-sweep
+.PHONY: up down build run serve run-ko run-ja run-en run-gotenberg run-weasyprint run-docraptor run-reactpdf clean health load load-sweep load-weasy load-weasy-sweep
 
 up:
 	docker compose up -d --build
 	@echo ""
 	@echo "  Gotenberg:   http://localhost:3000"
 	@echo "  WeasyPrint:  http://localhost:5001/health"
+	@echo "  ReactPdf:    http://localhost:5002/health"
 
 down:
 	docker compose down
@@ -38,9 +39,13 @@ run-weasyprint:
 run-docraptor:
 	go run . -backend docraptor
 
+run-reactpdf:
+	go run . -backend reactpdf
+
 health:
 	@echo "Gotenberg:"  && curl -sf http://localhost:3000/health  | head -c 200 ; echo
 	@echo "WeasyPrint:" && curl -sf http://localhost:5001/health | head -c 200 ; echo
+	@echo "ReactPdf:"   && curl -sf http://localhost:5002/health | head -c 200 ; echo
 
 clean:
 	rm -rf output/*.pdf output/*.html bin

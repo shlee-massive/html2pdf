@@ -1,6 +1,8 @@
 # 사용법 (USAGE)
 
-`html-to-pdf-go-server-report.md` 의 결론을 실제로 검증하기 위한 PoC 샘플의 사용 매뉴얼입니다. 동일한 HTML/데이터를 **Gotenberg · WeasyPrint · DocRaptor** 세 엔진에 보내 PDF를 비교합니다.
+`html-to-pdf-go-server-report.md` 의 결론을 실제로 검증하기 위한 PoC 샘플의 사용 매뉴얼입니다. 동일한 데이터를 **Gotenberg · WeasyPrint · DocRaptor · ReactPdf** 네 엔진에 보내 PDF를 비교합니다.
+
+> ⚠️ ReactPdf 만 입력 형식이 다릅니다 — HTML 이 아닌 Invoice JSON 을 받습니다. 측정 결과 해석 시 README.md 의 "비교축 차이" 단서 참조.
 
 - 작성 기준일: 2026-05-24
 - 대상: Go 서버에서 HTML → PDF 변환 도구 선정 PoC 담당자
@@ -16,10 +18,10 @@ make up
 
 # 2) 헬스 체크
 make health
-# → Gotenberg / WeasyPrint 모두 200 OK 가 떠야 다음 단계로 진행
+# → Gotenberg / WeasyPrint / ReactPdf 모두 200 OK 가 떠야 다음 단계로 진행
 
-# 3-A) 배치 모드: 3 로케일 × 3 백엔드 = PDF 9개 생성
-make run                    # output/{ko,ja,en}-{gotenberg,weasyprint,docraptor}.pdf
+# 3-A) 배치 모드: 3 로케일 × 4 백엔드 = PDF 12개 생성
+make run                    # output/{ko,ja,en}-{gotenberg,weasyprint,docraptor,reactpdf}.pdf
 
 # 3-B) 또는 브라우저 데모
 make serve                  # → http://localhost:8080
@@ -183,13 +185,14 @@ docker stats htp-gotenberg htp-weasyprint
 | `-serve` | `false` | HTTP 서버 모드 |
 | `-addr` | `:8080` | 서버 모드 리스닝 주소 |
 | `-locale` | `all` | `ko` / `ja` / `en` / `all` / 콤마 구분 |
-| `-backend` | `all` | `gotenberg` / `weasyprint` / `docraptor` / `all` / 콤마 구분 |
+| `-backend` | `all` | `gotenberg` / `weasyprint` / `docraptor` / `reactpdf` / `all` / 콤마 구분 |
 | `-template` | `templates/invoice.html.tmpl` | 템플릿 경로 |
 | `-data` | `data` | `{locale}.json` 디렉터리 |
 | `-out` | `output` | PDF 출력 디렉터리 |
 | `-dump-html` | `false` | 렌더된 HTML 도 `output/{locale}.html` 로 저장 |
 | `-gotenberg-url` | `http://localhost:3000` | Gotenberg 베이스 URL |
 | `-weasyprint-url` | `http://localhost:5001` | WeasyPrint 베이스 URL |
+| `-reactpdf-url` | `http://localhost:5002` | ReactPdf 사이드카 베이스 URL |
 | `-docraptor-key` | `YOUR_API_KEY_HERE` | DocRaptor API 키 |
 | `-docraptor-test` | `true` | DocRaptor test 모드 (무료/워터마크) |
 

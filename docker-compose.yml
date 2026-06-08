@@ -20,3 +20,12 @@ services:
       MALLOC_PERTURB_: "42"
       PYTHONFAULTHANDLER: "1"
       PYTHONUNBUFFERED: "1"
+
+  reactpdf:
+    build: ./react-pdf
+    container_name: htp-reactpdf
+    ports:
+      - "5002:5002"
+    environment:
+      NODE_ENV: production
+      PORT: "5002"

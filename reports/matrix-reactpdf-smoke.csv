@@ -1,0 +1,10 @@
+template,language,backend,size_bytes,baseline_ms,conc_throughput_req_s,conc_avg_ms,conc_p50_ms,conc_p95_ms,conc_max_ms,conc_ok,conc_fail
+invoice,ko,gotenberg,12774,263,9.047,406,366,517,540,8,0
+invoice,ko,weasyprint,12774,4704,0.237,13746,16656,17027,17140,8,0
+invoice,ko,reactpdf,4199,238,9.066,440,389,621,622,8,0
+invoice,ja,gotenberg,12826,286,8.162,481,425,557,594,8,0
+invoice,ja,weasyprint,12826,4553,0.218,14870,18298,18429,18519,8,0
+invoice,ja,reactpdf,4369,176,11.733,340,304,472,473,8,0
+invoice,en,gotenberg,12450,105,19.759,195,190,225,235,8,0
+invoice,en,weasyprint,12450,4017,0.263,12418,15136,15320,15402,8,0
+invoice,en,reactpdf,4085,196,12.350,323,316,388,503,8,0

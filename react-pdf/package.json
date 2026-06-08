@@ -1,0 +1,22 @@
+{
+  "name": "htp-react-pdf-sidecar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "react-pdf/renderer 사이드카 — html-to-pdf PoC 4-way 비교용",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
+    "@expo-google-fonts/noto-sans-jp": "^0.4.2",
+    "@expo-google-fonts/noto-sans-kr": "^0.4.2",
+    "@react-pdf/renderer": "^4.5.1",
+    "express": "^4.21.2",
+    "react": "^19.0.0"
+  }
+}

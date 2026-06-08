@@ -16,6 +16,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -36,11 +37,13 @@ func main() {
 		concurrent = flag.Int("concurrent", 4, "concurrent 모드 동시성")
 		concTotal  = flag.Int("concurrent-total", 8, "concurrent 모드 요청 수")
 		timeout    = flag.Duration("timeout", 120*time.Second, "요청 타임아웃")
-		backendsFl = flag.String("backends", "gotenberg,weasyprint", "쉼표 구분, 측정할 백엔드")
-		templatesF = flag.String("templates", "", "쉼표 구분, 비우면 전체. 예: nested-deep,nested-split")
-		languagesF = flag.String("languages", "", "쉼표 구분, 비우면 전체. 예: ko,ja,en")
-		cooldown   = flag.Duration("cooldown", 0, "각 셀 사이 sleep (안정성 확보용)")
-		appendCSV  = flag.Bool("append", false, "기존 CSV 에 이어쓰기 (헤더 생략)")
+		backendsFl  = flag.String("backends", "gotenberg,weasyprint", "쉼표 구분, 측정할 백엔드. reactpdf 포함 가능 (invoice 시나리오 한정)")
+		templatesF  = flag.String("templates", "", "쉼표 구분, 비우면 전체. 예: nested-deep,nested-split")
+		languagesF  = flag.String("languages", "", "쉼표 구분, 비우면 전체. 예: ko,ja,en")
+		cooldown    = flag.Duration("cooldown", 0, "각 셀 사이 sleep (안정성 확보용)")
+		appendCSV   = flag.Bool("append", false, "기존 CSV 에 이어쓰기 (헤더 생략)")
+		reactpdfURL = flag.String("reactpdf-url", "http://localhost:5002", "reactpdf 사이드카 base URL (HTTP 서버 우회 직접 호출)")
+		dataDir     = flag.String("data-dir", "data", "reactpdf 측정용 Invoice JSON 디렉토리 ({locale}.json)")
 	)
 	flag.Parse()
 
@@ -107,17 +110,41 @@ func main() {
 
 	startAll := time.Now()
 	for _, c := range combos {
-		body, err := os.ReadFile(c.path)
+		htmlBody, err := os.ReadFile(c.path)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "[skip] %s: %v\n", c.path, err)
 			continue
 		}
 		for _, b := range backends {
-			url := *baseURL + "/api/convert?backend=" + b
+			// 백엔드별 입력 분기:
+			//   - HTML 백엔드 (gotenberg/weasyprint/docraptor): serve 서버의 /api/convert 로 HTML body POST
+			//   - reactpdf:                                    사이드카 :5002/pdf 로 Invoice JSON body 직접 POST
+			//                                                  (HTML 전용 nested-* 시나리오는 자동 skip)
+			var url, contentType string
+			var body []byte
+			if b == "reactpdf" {
+				if c.template != "invoice" {
+					fmt.Fprintf(os.Stderr, "[skip] %s/%s/reactpdf: HTML 전용 시나리오 — Invoice JSON 입력 불가\n", c.template, c.language)
+					continue
+				}
+				dataPath := filepath.Join(*dataDir, c.language+".json")
+				jsonBody, rerr := os.ReadFile(dataPath)
+				if rerr != nil {
+					fmt.Fprintf(os.Stderr, "[skip] %s/%s/reactpdf: %v\n", c.template, c.language, rerr)
+					continue
+				}
+				url = strings.TrimRight(*reactpdfURL, "/") + "/pdf"
+				contentType = "application/json"
+				body = jsonBody
+			} else {
+				url = *baseURL + "/api/convert?backend=" + b
+				contentType = "text/html; charset=utf-8"
+				body = htmlBody
+			}
 
 			// baseline: 1 req, sequential
 			t0 := time.Now()
-			_, code, err := doOne(url, body, *timeout)
+			_, code, err := doOne(url, contentType, body, *timeout)
 			baseline := time.Since(t0)
 			if err != nil || code != 200 {
 				fmt.Fprintf(os.Stderr, "[fail baseline] %s/%s/%s: code=%d err=%v\n", c.template, c.language, b, code, err)
@@ -125,7 +152,7 @@ func main() {
 			}
 
 			// concurrent
-			r := runConcurrent(url, body, *concurrent, *concTotal, *timeout)
+			r := runConcurrent(url, contentType, body, *concurrent, *concTotal, *timeout)
 			sorted := append([]time.Duration(nil), r.lats...)
 			sort.Slice(sorted, func(i, j int) bool { return sorted[i] < sorted[j] })
 			var sum time.Duration
@@ -140,6 +167,8 @@ func main() {
 			if r.wall > 0 {
 				throughput = float64(r.ok) / r.wall.Seconds()
 			}
+			// size_bytes 는 실제 전송한 body 기준 (reactpdf 는 JSON, 나머지는 HTML).
+			// 입력 형식이 다르다는 것을 결과에서 추적 가능.
 			fmt.Printf(rowFmt,
 				c.template, c.language, b, len(body)/1024,
 				baseline.Round(time.Millisecond),
@@ -219,7 +248,7 @@ type result struct {
 	fail int
 }
 
-func runConcurrent(url string, body []byte, concurrency, total int, timeout time.Duration) result {
+func runConcurrent(url, contentType string, body []byte, concurrency, total int, timeout time.Duration) result {
 	jobs := make(chan struct{}, total)
 	for i := 0; i < total; i++ {
 		jobs <- struct{}{}
@@ -240,7 +269,7 @@ func runConcurrent(url string, body []byte, concurrency, total int, timeout time
 			defer wg.Done()
 			for range jobs {
 				t0 := time.Now()
-				_, code, err := doOne(url, body, timeout)
+				_, code, err := doOne(url, contentType, body, timeout)
 				d := time.Since(t0)
 				mu.Lock()
 				lats = append(lats, d)
@@ -257,14 +286,14 @@ func runConcurrent(url string, body []byte, concurrency, total int, timeout time
 	return result{wall: time.Since(start), lats: lats, ok: ok, fail: fail}
 }
 
-func doOne(url string, body []byte, timeout time.Duration) (int, int, error) {
+func doOne(url, contentType string, body []byte, timeout time.Duration) (int, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return 0, 0, err
 	}
-	req.Header.Set("Content-Type", "text/html; charset=utf-8")
+	req.Header.Set("Content-Type", contentType)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return 0, 0, err

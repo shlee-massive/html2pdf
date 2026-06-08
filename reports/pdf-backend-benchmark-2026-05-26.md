@@ -1,5 +1,7 @@
 # HTML → PDF 변환 백엔드 종합 벤치마크 보고서
 
+> ⏩ **후속 측정 있음**: [pdf-backend-benchmark-2026-06-08-4way.md](./pdf-backend-benchmark-2026-06-08-4way.md) — `@react-pdf/renderer` 사이드카를 4번째 백엔드로 추가한 4-way 측정 (invoice 시나리오 한정). 본 보고서의 3-way 결론은 유지되며, ReactPdf 의 위치만 후속 보고서가 정의함.
+
 - 측정일: 2026-05-26
 - 대상: 본 리포의 `POST /api/convert?backend=X` 엔드포인트가 위임하는 3 백엔드
   - **Gotenberg** (Chromium Headless 147, Skia/PDF m147, 로컬 Docker)
