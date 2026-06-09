@@ -6,6 +6,21 @@
 
 PDF 변환 백엔드 4종 (Gotenberg / WeasyPrint / DocRaptor / @react-pdf/renderer) 의 처리량·안정성·운영 위험을 측정. **Gotenberg 가 종합 1순위**. 단일 양식·인프라 최소화가 목표라면 `@react-pdf/renderer` 도 후보 — 단, 측정 외 운영 위험 4가지 (lock-in, paged media 성숙도, SMP 한자 누락, Node 이벤트 루프 블로킹) 가 도입 조건을 좁힘.
 
+## 용어
+
+| 용어 | 의미 |
+|---|---|
+| **req/s** (throughput) | 초당 처리한 요청 수. 높을수록 처리량 좋음. 정점 (peak) = 동시성을 올리며 측정한 값 중 최고치. |
+| **conc** (concurrency) | 동시에 띄운 요청 수. 클라이언트가 1·2·4·8·16 병렬로 호출하며 서버가 어느 지점에서 한계에 도달하는지 본다. |
+| **baseline** | conc=1, 단발 요청. 콜드/웜 영향 최소화한 단일 처리 시간 기준치. |
+| **p95 latency** | 응답 시간 분포의 95 백분위수 (ms). 100 요청 중 빠른 95개의 상한. 평균보다 _최악 케이스_ 를 더 잘 반영. 운영에서 사용자 체감 SLA 기준으로 흔히 쓰임. |
+| **sweep** | conc 를 단계적으로 올리며 throughput·latency 곡선을 그리는 측정. 본 측정은 conc {1,2,4,8,16} 5단계. |
+| **회귀 (▽)** | 직전 conc 대비 throughput 하락 — 동시성을 더 올렸는데 오히려 느려진 지점. 엔진 포화·락 경합의 신호. |
+| **SPOF** (Single Point of Failure) | 단일 장애점. 1 프로세스가 죽으면 서비스 전체가 멈추는 구조. replica 수평 확장으로 완화. |
+| **SMP** (Supplementary Multilingual Plane, U+10000~) | 유니코드 보충 다국어 면. `𠮷` (요시노야의 吉) 등 확장 한자가 여기 포함. 일부 폰트·렌더러가 미지원 → silent 누락. |
+| **CDN fetch** | 매 요청마다 외부 (Google Fonts 등) 로 폰트·리소스를 가져오는 비용. 네트워크 RTT 가 그대로 응답 시간에 합산됨. |
+| **CSS Paged Media** | CSS 표준 명세 (`@page`, `page-break-*`, `break-before/after`). 페이지 단위 분할·머리글 반복 등을 정의. PDF 생성 엔진의 표준 준수 여부가 양식 호환성을 좌우. |
+
 ## 측정 범위
 
 - **백엔드 4종**: Gotenberg (Chrome 기반), WeasyPrint (Python), DocRaptor (SaaS, 이번 측정 제외), @react-pdf/renderer (Node 사이드카)
