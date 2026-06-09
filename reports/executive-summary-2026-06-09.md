@@ -95,7 +95,7 @@ PDF 변환 백엔드 4종 (Gotenberg / WeasyPrint / DocRaptor / @react-pdf/rende
 | 위험 항목 | Gotenberg | reactpdf | WeasyPrint |
 |---|---|---|---|
 | 다양한 보고서 양식 처리 | 저 | **고** (JSX 재작성) | 저 |
-| Paged media (페이지 분할·표 행 잘림) 성숙도 | 저 | **고** (CSS Paged Media 미지원) | 저 |
+| Paged media (페이지 분할·표 행 잘림) 성숙도 | 저 | **고** — W3C 명세 미준수, 자체 paging API 는 있으나 표 thead 반복·행 자동 분할 수동 구현 필요 | 저 |
 | 한자 SMP 정확도 (`𠮷` 등) | 저 | **고** (silent 누락) | 저 |
 | 단일 프로세스 SPOF | 중 | **고** (Node sync 렌더) | **고** (threaded=False) |
 | 외부 CDN 의존 | 중 | 저 | **고** |
@@ -108,11 +108,23 @@ PDF 변환 백엔드 4종 (Gotenberg / WeasyPrint / DocRaptor / @react-pdf/rende
 >
 > 각 행별 구체 기준:
 > - **다양한 보고서 양식**: 저 = HTML 템플릿 1회로 처리 / 고 = 양식별 JSX 컴포넌트를 새로 작성
-> - **Paged media**: 저 = CSS `@page`·`break-*`·`thead repeat` 표준 준수 / 고 = 표준 미지원, 페이지 분할 수동 구현 필요
+> - **Paged media**: 저 = W3C CSS Paged Media (`@page`·`break-*`·`thead` 페이지 반복) 표준 준수 / 고 = W3C 명세 미준수. reactpdf 의 경우 자체 paging API (`<Page>`, `<View break>`, `<View wrap={false}>`, `<View fixed>`) 로 페이지 분할·고정 헤더는 가능하지만, 표 thead 자동 반복·행 자동 분할은 코드에서 수동 처리 필요
 > - **SMP 한자 정확도**: 저 = U+20000 이상 한자 정상 렌더 / 고 = silent 누락 (에러 없이 글자가 사라짐)
 > - **단일 프로세스 SPOF**: 중 = HTTP 서버 1프로세스지만 내부 워커 풀 보유, replica 로 수평 확장 가능 / 고 = 동기 직렬 렌더, replica 외 다른 완화책 없음
 > - **외부 CDN 의존**: 저 = 외부 fetch 없음 / 중 = 폰트만 OS·이미지 임베드로 회피 가능 / 고 = 매 요청 CDN fetch (현재 측정 환경)
 > - **HTML 디자이너 협업**: 가능 = HTML/CSS 결과물 그대로 / 불가 = JSX 코드 수정 필요
+
+### 참고 — @react-pdf 의 Paged media 위험에 대한 흔한 오해
+
+> **오해**: "JSX 에 `className="page-break-before"` 같은 CSS 클래스 넣어주면 되는 것 아닌가?"
+>
+> **실제**: @react-pdf/renderer 는 HTML/CSS 파서·CSS 엔진 자체가 없음. React Native 와 유사한 별도 페인트 엔진.
+> - `className` prop **미지원** (받지도 않음) — `style` 만 받음
+> - `style` 도 W3C CSS 가 아니라 자체 StyleSheet API. `pageBreakBefore`, `breakInside`, `@page` 등은 **속성명을 인식하지 않고 silent ignore**
+> - HTML 태그 자체 **미지원** — `<div>`/`<table>`/`<thead>` 없음. `<View>`/`<Text>`/`<Image>`/`<Page>` 만
+> - 분할·고정 헤더는 **자체 prop 으로 처리**: `<View break>` (page-break-before), `<View wrap={false}>` (break-inside: avoid), `<View fixed>` (running header), `<Page wrap>` (자동 페이지 분할)
+>
+> → 80% 는 자체 API 로 해결 가능. 단 **표 thead 자동 반복**, **행 자동 분할**, **widows/orphans** 는 코드로 수동 구현해야 함 — 양식이 다양해질수록 분량 증가. 이 비용이 운영 위험 "고" 의 실체.
 
 ## 권고
 
