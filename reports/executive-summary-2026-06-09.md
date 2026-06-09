@@ -1,4 +1,4 @@
-# HTML → PDF 백엔드 선정 — 임원 보고용 요약
+# HTML → PDF 백엔드 선정 — 벤치마크 결과 요약
 
 > 작성일: 2026-06-09 · 1 페이지 요약 · 상세는 [pdf-backend-benchmark-2026-06-08-4way.md](./pdf-backend-benchmark-2026-06-08-4way.md)
 
