@@ -1,0 +1,16 @@
+conc,template,language,backend,size_bytes,baseline_ms,conc_throughput_req_s,conc_avg_ms,conc_p50_ms,conc_p95_ms,conc_max_ms,conc_ok,conc_fail
+1,invoice,ko,reactpdf,4199,226,5.970,167,166,179,189,16,0
+1,invoice,ja,reactpdf,4369,195,6.049,165,166,176,183,16,0
+1,invoice,en,reactpdf,4085,181,5.258,190,162,270,361,16,0
+2,invoice,ko,reactpdf,4199,198,7.659,261,244,329,335,16,0
+2,invoice,ja,reactpdf,4369,209,9.517,210,201,255,270,16,0
+2,invoice,en,reactpdf,4085,185,8.645,231,222,265,347,16,0
+4,invoice,ko,reactpdf,4199,205,11.581,345,341,417,476,32,0
+4,invoice,ja,reactpdf,4369,200,14.348,278,269,363,403,32,0
+4,invoice,en,reactpdf,4085,196,13.524,295,294,398,452,32,0
+8,invoice,ko,reactpdf,4199,194,13.949,573,567,806,916,64,0
+8,invoice,ja,reactpdf,4369,199,17.908,446,433,590,704,64,0
+8,invoice,en,reactpdf,4085,192,14.002,571,551,816,1084,64,0
+16,invoice,ko,reactpdf,4199,197,14.622,1093,1079,1579,1952,128,0
+16,invoice,ja,reactpdf,4369,203,16.682,958,945,1278,1631,128,0
+16,invoice,en,reactpdf,4085,258,13.258,1206,1191,1716,2258,128,0
