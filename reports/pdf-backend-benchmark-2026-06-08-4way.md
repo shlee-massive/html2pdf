@@ -59,6 +59,26 @@
 - **ReactPdf sweep 워밍업** — 각 로케일 1회 baseline 요청으로 폰트 등록 트리거 (`/health` 의 `fontsRegistered: false → true` 확인 후 측정 시작).
 - **Sweep 셀당 요청 수** — baseline 1 + concurrent total. conc=1 셀 = 17 req, conc=16 셀 = 129 req.
 
+### 1.6 측정 한계 (결과 해석 시 필수 참조)
+
+본 측정은 다음 한계를 가짐. 한계 5건 중 1~3은 **결론을 흔들 수 있는 수준**, 4~5는 변동성·일반화 단서.
+
+| # | 한계 | 영향 받는 결과 | 비고 |
+|---|---|---|---|
+| 1 | **WeasyPrint invoice 의 baseline 4s+ 는 엔진 처리 비용이 아니라 Google Fonts CDN fetch 비용**. invoice 템플릿만 `@import url(fonts.googleapis.com/...)` 사용 — 매 요청 외부 호출. nested-* 는 인라인 CSS 라 동일 엔진이 80~770ms 로 처리 가능. | §2 invoice/weasyprint, §3.1/3.2 invoice/weasyprint, §3.6 weasyprint sweep 전체 | CDN 제거 + 폰트 컨테이너 내장 시 측정값 크게 변동 예상. 본 측정은 _현재 코드/환경 그대로_ 의 값. |
+| 2 | **WeasyPrint `threaded=False` 는 측정 환경 제약**. 이전 SIGSEGV 회귀 회피용 fix 로 Flask 를 단일 스레드로 고정. 엔진 자체의 멀티스레드 능력 측정 아님. | §3.6 weasyprint sweep 의 conc 무관 0.21~0.26 req/s 천장 | threaded=True 안정성 재검증 후 재측정 시 천장 변동 가능. |
+| 3 | **ReactPdf 는 입력 형식이 다른 작업**. JSON body (3~4KB) 직접 POST — HTML 파싱 비용 없음. 다른 백엔드 (HTML body 12~26KB) 와 _다른 단계의 작업을 측정_. 실제 운영에선 어딘가에서 JSON→HTML 변환을 거치는데 reactpdf 측정엔 그 비용이 빠짐. | §2/§3.1/§3.5 reactpdf 전체. 특히 §3.6.4 의 ko/ja 정점 비교. | 공정 비교하려면 reactpdf 에 JSON 생성 단계 비용을 합산해야 함. |
+| 4 | **gotenberg/weasyprint sweep 에 워밍업 없음**. reactpdf 만 사전 워밍업 (폰트 등록). gotenberg conc=1/ko baseline 736ms (콜드) vs conc=2/ko 153ms — 콜드스타트 오염 잔존. | §3.6.1 의 conc=1 행 일부 (특히 gotenberg/ko) | sweep 곡선 시작점 약간 왜곡. 정점 (conc=8) 비교에는 영향 작음. |
+| 5 | **백엔드별 invoice 템플릿이 다른 코드**. Gotenberg/WeasyPrint = `templates/invoice.html.tmpl` (Go template → HTML), ReactPdf = `react-pdf/invoice-doc.mjs` (JSX). 시각적으로 동일한 결과를 만든다는 _가정만 있고 자동 비교는 안 함_. | §2/§3 의 reactpdf 칸 전체 | 시각 회귀 검증 (pdftoppm + pixelmatch) 미실행 — 다른 PDF 를 만들고 있다면 throughput 비교 자체가 다른 작업 간 비교. |
+
+추가 (덜 심각하지만 일반화 시 단서):
+
+- **단일 호스트 측정** — macOS Apple Silicon + Docker Desktop. 4 서비스 + matrix 러너가 한 호스트에서 경쟁. 운영 환경의 서비스 분리·리소스 격리와 다름.
+- **conc=1 의 p95 는 16 샘플 기반** — 통계적 변동성 큼. 정점 비교에선 conc=8/16 (64~128 샘플) 이 더 신뢰 가능.
+- **DocRaptor 누락** — "4-way" 명명이지만 본 측정은 사실상 3-way. test API 키 미설정.
+- **invoice 1 종만 측정** — 라인 아이템 수·통화 종류·페이지 수 다양성 미반영. 대용량 invoice 의 메모리 특성 미검증.
+- **OS / 아키텍처 차이** — ARM Apple Silicon ≠ 운영 환경 일반적 Linux x86_64. 절대 throughput 수치는 환경 의존.
+
 ---
 
 ## 2. 결과 — baseline (단일 요청, ms)
